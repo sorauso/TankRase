@@ -97,12 +97,8 @@
       <Filter>01Engine\ResourceManager</Filter>
     </ClCompile>
     <ClCompile Include="PlayScene.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Bullet.cpp" />
-    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="ClearScene.cpp" />
     <ClCompile Include="TitleScene.cpp" />
-    <ClCompile Include="EnemyMather.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\BoxCollider.h">
@@ -176,12 +172,8 @@
       <Filter>01Engine\ResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="PlayScene.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Bullet.h" />
-    <ClInclude Include="Enemy.h" />
     <ClInclude Include="ClearScene.h" />
     <ClInclude Include="TitleScene.h" />
-    <ClInclude Include="EnemyMather.h" />
     <ClInclude Include="Math3D.h">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
