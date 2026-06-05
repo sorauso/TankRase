@@ -24,7 +24,7 @@ void PlayScene::Update()
 {
 	if (counter > 30)
 	{
-		if (Input::IsKeyDown(DIK_N))
+		if (Input::IsKeyDown(DIK_P))
 		{
 			SceneManager* sceneManager = (SceneManager*)(this->GetParent());
 			sceneManager->ChangeScene(SCENE_ID_CLEAR);
