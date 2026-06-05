@@ -2,15 +2,11 @@
 #include "Engine/Model.h"
 #include "Engine/Input.h"
 #include "Engine/Image.h"
-#include "Player.h"
-#include "EnemyMather.h"
 #include "Engine/SceneManager.h"
 
 namespace
 {
-	float xmova = 10.0f;
-	float zmova = 7.0f;
-	float yrot = 2.0f;
+	int counter = 0;;
 }
 
 PlayScene::PlayScene(GameObject* parent)
@@ -22,17 +18,21 @@ void PlayScene::Initialize()
 {
 	hModel_ = Image::Load("PLAY.png");
 	assert(hModel_ >= 0);
-	Instantiate<Player>(this);
-	Instantiate<EnemyMather>(this);
 }
 
 void PlayScene::Update()
 {
-
-	if (FindObject("EnemyMather") == nullptr)
+	if (counter > 30)
 	{
-		SceneManager* sceneManager = (SceneManager*)(this->GetParent());
-		sceneManager->ChangeScene(SCENE_ID_CLEAR);
+		if (Input::IsKeyDown(DIK_N))
+		{
+			SceneManager* sceneManager = (SceneManager*)(this->GetParent());
+			sceneManager->ChangeScene(SCENE_ID_CLEAR);
+		}
+	}
+	else
+	{
+		counter++;
 	}
 }
 
