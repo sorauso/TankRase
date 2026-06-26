@@ -3,6 +3,7 @@
 #include "Engine/Input.h"
 #include "Engine/Image.h"
 #include "Engine/SceneManager.h"
+#include "Tank.h"
 
 namespace
 {
@@ -18,6 +19,8 @@ void PlayScene::Initialize()
 {
 	hModel_ = Image::Load("PLAY.png");
 	assert(hModel_ >= 0);
+
+	Instantiate<TankBody>(this);
 }
 
 void PlayScene::Update()

@@ -99,6 +99,8 @@
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="ClearScene.cpp" />
     <ClCompile Include="TitleScene.cpp" />
+    <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="Bullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\BoxCollider.h">
@@ -177,6 +179,8 @@
     <ClInclude Include="Math3D.h">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Tank.h" />
+    <ClInclude Include="Bullet.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shader\Simple2D.hlsl">
