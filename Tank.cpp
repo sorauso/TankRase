@@ -5,6 +5,7 @@
 #include "Engine/Camera.h"
 
 #include "Bullet.h"
+#include "Ground.h"
 
 namespace
 {
@@ -67,7 +68,8 @@ void TankBody::Update()
 
 	const float ACCELERATION = 0.01f;
 	const float DECELERATION = 0.01f;
-	const float ACCELERTION_MAX = 0.8f;
+	const float ACCELERTION_MAX = 2.0f;
+	const float BACK_ACCELERTION_MAX = 0.8f;
 	if (Input::IsKey(DIK_W))
 	{
 		XMFLOAT3 Vtf;
@@ -81,7 +83,7 @@ void TankBody::Update()
 	{
 		XMFLOAT3 Vtf;
 		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z > -ACCELERTION_MAX)
+		if (Vtf.z > -BACK_ACCELERTION_MAX)
 		{
 			Vt -= XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
 		}
@@ -122,6 +124,65 @@ void TankBody::Release()
 
 void TankBody::RotationTank()
 {
+	float BoxSozeX = 1.5f;
+	float BoxSozeZ = 2.5f;
+	XMFLOAT3 rayPos = transform_.position_;
+	XMMATRIX matRot = XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.y));
+	XMVECTOR vPos = { 0.0f,0.0f,0.0f,0.0f };
+	XMVECTOR ryaMovePos = XMLoadFloat3(&rayPos);
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
+	RayCastData data1;
+	XMFLOAT3 startPos;
+	vPos = { -BoxSozeX ,0,0,0 };
+	vPos = XMVector3TransformCoord(vPos, matRot);
+	XMStoreFloat3(&startPos, ryaMovePos + vPos);
+	startPos.y = 0;
+	data1.start = startPos;           //レイの発射位置
+	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data1); //レイを発射
+
+	RayCastData data2;
+	vPos = { BoxSozeX ,0,0,0 };
+	vPos = XMVector3TransformCoord(vPos, matRot);
+	XMStoreFloat3(&startPos, ryaMovePos + vPos);
+	startPos.y = 0;
+	data2.start = startPos;      //レイの発射位置
+	data2.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data2); //レイを発射
+
+	RayCastData data3;
+	vPos = { 0 ,0,BoxSozeZ,0 };
+	vPos = XMVector3TransformCoord(vPos, matRot);
+	XMStoreFloat3(&startPos, ryaMovePos + vPos);
+	startPos.y = 0;
+	data3.start = startPos;        //レイの発射位置
+	data3.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data3); //レイを発射
+
+	RayCastData data4;
+	vPos = { 0 ,0,-BoxSozeZ,0 };
+	vPos = XMVector3TransformCoord(vPos, matRot);
+	XMStoreFloat3(&startPos, ryaMovePos + vPos);
+	startPos.y = 0;
+	data4.start = startPos;           //レイの発射位置
+	data4.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data4); //レイを発射
+
+	float d1y = (data1.dist - data2.dist) / 2;
+	float d1s = atan2(d1y, BoxSozeX / 2);
+
+	transform_.rotate_.z = d1s * 180.0f / 3.14159265f;
+
+	float d2y = (data3.dist - data4.dist) / 2;
+	float d2s = atan2(d2y, BoxSozeZ / 2);
+
+	transform_.rotate_.x = d2y * 180.0f / 3.14159265f;
+
+	float Mini = min(min(data1.dist, data2.dist), min(data3.dist, data4.dist));
+	float Maxe = max(max(data1.dist, data2.dist), max(data3.dist, data4.dist));
+
+	transform_.position_.y = 0 - (Mini + Maxe) / 2;
 }
 
 void TankBody::SetTpsRotCamera()
@@ -142,7 +203,7 @@ void TankBody::SetTpsRotCamera()
 
 XMFLOAT3 TankBody::MovingVectorCreation(Transform ts, XMVECTOR vt)
 {
-	const int STAGE_SIZE = 22;
+	const int STAGE_SIZE = 245;
 	XMFLOAT3 output = { 0,0,0 };
 	const float speed = 0.1f;
 	//回転行列の生成

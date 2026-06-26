@@ -29,12 +29,12 @@ void Bullet::Update()
 	vPos = vPos + vMove;
 	XMStoreFloat3(&move_, vMove);
 	XMStoreFloat3(&transform_.position_, vPos);
-	const float DereatPosition = 25.0f;
+	const float DereatPosition = 250.0f;
 	if (transform_.position_.z > DereatPosition ||
 		transform_.position_.z < -DereatPosition ||
 		transform_.position_.x > DereatPosition ||
 		transform_.position_.x < -DereatPosition ||
-		transform_.position_.y < -20.0f)
+		transform_.position_.y < -DereatPosition)
 	{
 		KillMe();
 	}

@@ -4,6 +4,7 @@
 #include "Engine/Image.h"
 #include "Engine/SceneManager.h"
 #include "Tank.h"
+#include "Ground.h"
 
 namespace
 {
@@ -20,6 +21,7 @@ void PlayScene::Initialize()
 	hModel_ = Image::Load("PLAY.png");
 	assert(hModel_ >= 0);
 
+	Instantiate<Ground>(this);
 	Instantiate<TankBody>(this);
 }
 
