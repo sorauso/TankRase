@@ -3,6 +3,7 @@
 #include "Engine/Input.h"
 #include "Engine/Debug.h"
 #include "Engine/Camera.h"
+#include "Engine/SphereCollider.h"
 
 #include "Bullet.h"
 #include "Ground.h"
@@ -27,10 +28,18 @@ void TankBody::Initialize()
     hModel_ = Model::Load("TankBody.fbx");
     assert(hModel_ >= 0);
     Instantiate<TankHead>(this);
+	transform_.position_ = XMFLOAT3(-220,0,220);
+	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 2.0f);
+	AddCollider(collision);
 }
 
 void TankBody::Update()
 {
+	char buf[256];
+	sprintf_s(buf, "pos:%.0f:%.0f\n", transform_.position_.x, transform_.position_.z);
+
+	OutputDebugStringA(buf);
+
 	const float rotSpeed = 0.05f;
 	if (Input::IsKey(DIK_A))
 	{

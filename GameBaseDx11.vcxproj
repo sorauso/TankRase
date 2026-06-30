@@ -159,6 +159,8 @@
     <ClCompile Include="Engine\Texture.cpp" />
     <ClCompile Include="Engine\Transform.cpp" />
     <ClCompile Include="Ground.cpp" />
+    <ClCompile Include="Landmark.cpp" />
+    <ClCompile Include="LandmarkMother.cpp" />
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="Tank.cpp" />
     <ClCompile Include="TestScene.cpp" />
@@ -191,6 +193,8 @@
     <ClInclude Include="Engine\Texture.h" />
     <ClInclude Include="Engine\Transform.h" />
     <ClInclude Include="Ground.h" />
+    <ClInclude Include="Landmark.h" />
+    <ClInclude Include="LandmarkMother.h" />
     <ClInclude Include="Math3D.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Tank.h" />
