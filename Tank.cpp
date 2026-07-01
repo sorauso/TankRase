@@ -7,6 +7,7 @@
 
 #include "Bullet.h"
 #include "Ground.h"
+#include "Landmark.h"
 
 namespace
 {
@@ -35,10 +36,9 @@ void TankBody::Initialize()
 
 void TankBody::Update()
 {
-	char buf[256];
+	/*char buf[256];
 	sprintf_s(buf, "pos:%.0f:%.0f\n", transform_.position_.x, transform_.position_.z);
-
-	OutputDebugStringA(buf);
+	OutputDebugStringA(buf);*/
 
 	const float rotSpeed = 0.05f;
 	if (Input::IsKey(DIK_A))
@@ -129,6 +129,30 @@ void TankBody::Draw()
 
 void TankBody::Release()
 {
+}
+
+float TankBody::GetLandmarkdirection()
+{
+	float ret = 0;
+	Landmark* pLDK = (Landmark*)FindObject("LandMark");
+	if (pLDK == nullptr)
+	{
+		return ret;
+	}
+	XMFLOAT3 ldPosF3 = pLDK->GetPosition();
+	XMVECTOR ldPosVC = XMLoadFloat3(&ldPosF3);
+	XMVECTOR tankPosVC = XMLoadFloat3(&transform_.position_);
+	XMVECTOR vecT = tankPosVC - ldPosVC;
+	const float yaw = XMConvertToRadians(transform_.rotate_.y);
+	XMFLOAT3 rotF3 = XMFLOAT3(cosf(yaw), 0, sinf(yaw));
+	XMVECTOR rotVC = XMLoadFloat3(&rotF3);
+	rotVC = XMVector3Normalize(rotVC);
+	vecT = XMVector3Normalize(vecT);
+	ret = XMVectorGetX(XMVector3Dot(rotVC,vecT));
+	char buf[256];
+	sprintf_s(buf, "%f\npos:%.0f:%.0f\n", ret, ldPosF3.x, ldPosF3.y);
+	OutputDebugStringA(buf);
+	return ret;
 }
 
 void TankBody::RotationTank()

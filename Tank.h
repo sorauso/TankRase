@@ -19,6 +19,7 @@ public:
 
 	//開放
 	void Release() override;
+	float GetLandmarkdirection();
 private:
 	int hModel_;
 private:
