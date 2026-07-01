@@ -150,7 +150,7 @@ float TankBody::GetLandmarkdirection()
 	vecT = XMVector3Normalize(vecT);
 	ret = XMVectorGetX(XMVector3Dot(rotVC,vecT));
 	char buf[256];
-	sprintf_s(buf, "%f\npos:%.0f:%.0f\n", ret, ldPosF3.x, ldPosF3.y);
+	sprintf_s(buf, "%f\npos:%.0f:%.0f\n", ret, ldPosF3.x, ldPosF3.z);
 	OutputDebugStringA(buf);
 	return ret;
 }
