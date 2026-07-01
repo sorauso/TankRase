@@ -130,6 +130,22 @@ public:
 	//RootJobを取得
 	GameObject* GetRootJob();
 
+	void SortByDrawOrder();
+
+	/// <summary>
+	/// 描画の優先順位を指定します
+	/// 数値が高いほど、先に描画されるので、
+	/// 2Dであれば、奥に表示されます
+	/// 何も指定しなければ０です
+	/// </summary>
+	/// <param name="odr">描画順位</param>
+	void SetDrawOrder(int order);
+
+	/// <summary>
+	/// 描画の優先順位を取得します
+	/// </summary>
+	/// <returns>描画優先順位</returns>
+	int GetDrawOrder();
 
 	//各アクセス関数
 	XMFLOAT3 GetPosition() { return transform_.position_; }
@@ -164,6 +180,7 @@ private:
 		unsigned entered : 1;		//更新するか
 		unsigned visible : 1;		//描画するか
 		unsigned dead : 1;			//削除するか
+		unsigned needSortDraw : 1;  //描画順を変更するか
 	};
 	OBJECT_STATE state_;
 
@@ -172,6 +189,9 @@ private:
 
 	//子オブジェクトリスト
 	std::list<GameObject*> childList_;
+
+	//描画順
+	int drawOrder;
 };
 
 

@@ -288,6 +288,22 @@ GameObject * GameObject::GetRootJob()
 	else return GetParent()->GetRootJob();
 }
 
+void GameObject::SortByDrawOrder()
+{
+	state_.needSortDraw = true;
+}
+
+void GameObject::SetDrawOrder(int order)
+{
+	drawOrder = order;
+	SortByDrawOrder();
+}
+
+int GameObject::GetDrawOrder()
+{
+	 return drawOrder;
+}
+
 
 
 
@@ -331,7 +347,11 @@ void GameObject::DrawSub()
 		CollisionDraw();
 	}
 #endif
-
+	if (state_.needSortDraw)
+	{
+		childList_.sort([](GameObject* a, GameObject* b) {return a->GetDrawOrder() > b->GetDrawOrder(); });
+		state_.needSortDraw = false;
+	}
 	//その子オブジェクトの描画処理
 	for (auto it = childList_.begin(); it != childList_.end(); it++)
 	{
