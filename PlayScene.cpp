@@ -7,6 +7,7 @@
 #include "Ground.h"
 #include "LandmarkMother.h"
 #include "UI.h"
+#include "Car.h"
 
 namespace
 {
@@ -27,6 +28,10 @@ void PlayScene::Initialize()
 	Instantiate<TankBody>(this);
 	Instantiate<LandmarkMother>(this);
 	Instantiate<UI>(this);
+	for (int i = 0;i < 16;i++)
+	{
+		Instantiate<Car>(this);
+	}
 }
 
 void PlayScene::Update()

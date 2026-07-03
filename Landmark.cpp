@@ -38,12 +38,12 @@ void Landmark::Draw()
 
 void Landmark::Release()
 {
+	LandmarkMother* lmm = (LandmarkMother*)this->GetParent();
+	lmm->MakeNextLandmark();
 }
 
 void Landmark::OnCollision(GameObject* pTarget)
 {
-	LandmarkMother* lmm = (LandmarkMother*)this->GetParent();
-	lmm->MakeNextLandmark();
 	KillMe();
 }
 

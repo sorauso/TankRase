@@ -1,69 +1,73 @@
-#include "Tank.h"
+#include "Car.h"
 #include "Engine/Model.h"
 #include "Engine/Input.h"
 #include "Engine/Debug.h"
 #include "Engine/Camera.h"
 #include "Engine/SphereCollider.h"
 
-#include "Bullet.h"
 #include "Ground.h"
 #include "Landmark.h"
 
-namespace
-{
-    XMVECTOR Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-    float aRotY = 0;
-}
-
-TankBody::TankBody(GameObject* parent)
-    :GameObject(parent, "TankBody"), hModel_(-1)
+Car::Car(GameObject* parent)
+    :GameObject(parent, "Car"), hModel_(-1)
 {
 }
 
-TankBody::~TankBody()
+Car::~Car()
 {
 }
 
-void TankBody::Initialize()
+void Car::Initialize()
 {
     hModel_ = Model::Load("TankBody.fbx");
     assert(hModel_ >= 0);
-    Instantiate<TankHead>(this);
-	transform_.position_ = XMFLOAT3(-220,0,220);
-	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 2.0f);
-	AddCollider(collision);
+    SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 2.0f);
+    AddCollider(collision);
+
+	const float rot = ((rand() % 50) + 10) * 0.001f;
+	const float AC = ((rand() % 15) + 1) * 0.001f;
+	const float DEC = ((rand() % 15) + 1) * 0.001f;
+	const float AC_MAX = ((rand() % 600) + 1500) * 0.001f;
+	const float B_MAX = ((rand() % 500) + 500) * 0.001f;
+	myStates = CAR_STATES(rot, AC, DEC, AC_MAX,B_MAX);
+
+	const float sPosX = (rand() % 40) + 200;
+	const float sPosZ = (rand() % 40) + 200;
+	transform_.position_ = XMFLOAT3(-sPosX, 0, sPosZ);
+
+	Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	aRotY = 0;
+
+	isHit = false;
+
+	pHitTeaget = nullptr;
 }
 
-void TankBody::Update()
+void Car::Update()
 {
-	/*char buf[256];
-	sprintf_s(buf, "pos:%.0f:%.0f\n", transform_.position_.x, transform_.position_.z);
-	OutputDebugStringA(buf);*/
-
-	const float rotSpeed = 0.05f;
-	if (Input::IsKey(DIK_A))
+	if (GetLandmarkdirection() < -5)
 	{
 		if (aRotY > -1.5f)
 		{
-			aRotY -= rotSpeed;
+			aRotY -= myStates.rotSpeed;
 		}
 	}
-	else if (Input::IsKey(DIK_D))
+	else if (GetLandmarkdirection() > 5)
 	{
 		if (aRotY < 1.5f)
 		{
-			aRotY += rotSpeed;
+			aRotY += myStates.rotSpeed;
 		}
 	}
 	else
 	{
 		if (aRotY > 0.01f)
 		{
-			aRotY -= rotSpeed;
+			aRotY -= myStates.rotSpeed;
 		}
 		else if (aRotY < -0.01f)
 		{
-			aRotY += rotSpeed;
+			aRotY += myStates.rotSpeed;
 		}
 		else
 		{
@@ -72,66 +76,64 @@ void TankBody::Update()
 	}
 	transform_.rotate_.y += aRotY;
 
-	//Debug::Log("Yangle = ");
-	//Debug::Log(transform_.rotate_.y,true);
-
-	const float ACCELERATION = 0.01f;
-	const float DECELERATION = 0.01f;
-	const float ACCELERTION_MAX = 2.0f;
-	const float BACK_ACCELERTION_MAX = 0.8f;
-	if (Input::IsKey(DIK_W))
+	if (1)
 	{
 		XMFLOAT3 Vtf;
 		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z < ACCELERTION_MAX)
+		if (Vtf.z < myStates.ACCELERTION_MAX)
 		{
-			Vt += XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
+			Vt += XMVectorSet(0.0f, 0.0f, myStates.ACCELERATION, 0.0f);
 		}
 	}
-	else if (Input::IsKey(DIK_S))
+
+	if (isHit)
 	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z > -BACK_ACCELERTION_MAX)
+		if (pHitTeaget != nullptr)
 		{
-			Vt -= XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
+			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
+			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
+			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
+			XMVECTOR vecT = tPosVC - myPosVC;
+			float yaw = XMConvertToRadians(this->transform_.rotate_.y);
+			XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
+			XMVECTOR rotVC = XMLoadFloat3(&rotF3);
+			rotVC = XMVector3Normalize(rotVC);
+			vecT = XMVector3Normalize(vecT);
+			float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
+			if (side > 0.01f)
+			{
+				Vt += XMVectorSet(-0.01f, 0, 0, 0);
+			}
+			else if (side < -0.01f)
+			{
+				Vt += XMVectorSet(0.01f, 0, 0, 0);
+			}
+			else
+			{
+			}
 		}
 	}
 	else
 	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z > 0.01f)
-		{
-			Vt -= XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
-		}
-		else if (Vtf.z < -0.01f)
-		{
-			Vt += XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
-		}
-		else
-		{
-			Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-		}
+		Vt *= XMVectorSet(0, 1, 1, 1);
 	}
-
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 	RotationTank();
 
-	SetTpsRotCamera();
+	isHit = false;
 }
 
-void TankBody::Draw()
+void Car::Draw()
 {
 	Model::SetTransform(hModel_, transform_);
 	Model::Draw(hModel_);
 }
 
-void TankBody::Release()
+void Car::Release()
 {
 }
 
-float TankBody::GetLandmarkdirection()
+float Car::GetLandmarkdirection()
 {
 	float ret = 0;
 	Landmark* pLDK = (Landmark*)FindObject("LandMark");
@@ -157,7 +159,16 @@ float TankBody::GetLandmarkdirection()
 	return ret;
 }
 
-void TankBody::RotationTank()
+void Car::OnCollision(GameObject* pTarget)
+{
+	if (pTarget->GetObjectName() == "Car")
+	{
+		pHitTeaget = pTarget;
+		isHit = true;
+	}
+}
+
+void Car::RotationTank()
 {
 	float BoxSozeX = 1.5f;
 	float BoxSozeZ = 2.5f;
@@ -220,23 +231,7 @@ void TankBody::RotationTank()
 	transform_.position_.y = 0 - (Mini + Maxe) / 2;
 }
 
-void TankBody::SetTpsRotCamera()
-{
-	XMMATRIX matRot = XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.y));
-	XMVECTOR vPos = XMLoadFloat3(&transform_.position_);
-	XMFLOAT3 camPos;
-	XMFLOAT3 teagetPos;
-	XMVECTOR vCam = { 0.0f,3.0f,-5.0f,0 };
-	vCam = XMVector3TransformCoord(vCam, matRot);
-	XMStoreFloat3(&camPos, vPos + vCam);
-	Camera::SetPosition(camPos);
-	XMVECTOR vTeaget = { 0.0f,1.0f,5.0f,0 };
-	vTeaget = XMVector3TransformCoord(vTeaget, matRot);
-	XMStoreFloat3(&teagetPos, vPos + vTeaget);
-	Camera::SetTarget(teagetPos);
-}
-
-XMFLOAT3 TankBody::MovingVectorCreation(Transform ts, XMVECTOR vt)
+XMFLOAT3 Car::MovingVectorCreation(Transform ts, XMVECTOR vt)
 {
 	const int STAGE_SIZE = 245;
 	XMFLOAT3 output = { 0,0,0 };
@@ -263,56 +258,4 @@ XMFLOAT3 TankBody::MovingVectorCreation(Transform ts, XMVECTOR vt)
 		output.z = ts.position_.z;
 	}
 	return output;
-}
-
-TankHead::TankHead(GameObject* parent)
-	:GameObject(parent, "TankHead"), hModel_(-1)
-{
-}
-
-TankHead::~TankHead()
-{
-}
-
-void TankHead::Initialize()
-{
-	hModel_ = Model::Load("Tankhead.fbx");
-}
-
-void TankHead::Update()
-{
-	if (Input::IsKey(DIK_LEFT))
-	{
-		transform_.rotate_.y -= 0.5;
-	}
-	if (Input::IsKey(DIK_RIGHT))
-	{
-		transform_.rotate_.y += 0.5;
-	}
-	if (Input::IsKeyDown(DIK_SPACE))
-	{
-		const float BULLET_SPEED = 0.2f;
-		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
-		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Root");
-		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
-		XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
-		XMVECTOR vMove = vCannonTpo - vCannonRoot;
-		vMove = XMVector3Normalize(vMove);
-		vMove = XMVectorScale(vMove, BULLET_SPEED);
-		XMFLOAT3 fMove;
-		XMStoreFloat3(&fMove, vMove);
-		Bullet* pBullet = Instantiate<Bullet>(this->GetParent()->GetParent());
-		pBullet->SetMoveVector(fMove);
-		pBullet->SetPosition(cannonTpo);
-	}
-}
-
-void TankHead::Draw()
-{
-	Model::SetTransform(hModel_, transform_);
-	Model::Draw(hModel_);
-}
-
-void TankHead::Release()
-{
 }
