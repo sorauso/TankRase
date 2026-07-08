@@ -5,6 +5,7 @@
 
 #include "Ground.h"
 #include "LandmarkMother.h"
+#include "Car.h"
 
 Landmark::Landmark(GameObject* parent)
 	:GameObject(parent, "LandMark"), hModel_(-1)
@@ -39,11 +40,22 @@ void Landmark::Draw()
 void Landmark::Release()
 {
 	LandmarkMother* lmm = (LandmarkMother*)this->GetParent();
+	if (pAcquisitionCar->GetObjectName() == "tankBody")
+	{
+		lmm->GetAcquisitionCarNunber(0);
+	}
+	else if (pAcquisitionCar->GetObjectName() == "Car")
+	{
+		Car* pCar = (Car*)pAcquisitionCar;
+		int carNum = pCar->GetCarNunber();
+		lmm->GetAcquisitionCarNunber(carNum);
+	}
 	lmm->MakeNextLandmark();
 }
 
 void Landmark::OnCollision(GameObject* pTarget)
 {
+	pAcquisitionCar = pTarget;
 	KillMe();
 }
 

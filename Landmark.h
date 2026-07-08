@@ -25,5 +25,6 @@ public:
 private:
 	int hModel_;
 	XMFLOAT3 move_;
+	GameObject* pAcquisitionCar;
 };
 

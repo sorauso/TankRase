@@ -118,7 +118,18 @@ void Car::Update()
 		Vt *= XMVectorSet(0, 1, 1, 1);
 	}
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
-	RotationTank();
+	//RotationTank();
+
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
+	RayCastData data1;
+	XMFLOAT3 startPos;
+	startPos = transform_.position_;
+	startPos.y = 0;
+	data1.start = startPos;           //レイの発射位置
+	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data1); //レイを発射
+	transform_.position_.y = 0 - data1.dist;
 
 	isHit = false;
 }
@@ -157,6 +168,11 @@ float Car::GetLandmarkdirection()
 	float front = XMVectorGetX(XMVector3Dot(rotVC, vecT));
 	ret = XMConvertToDegrees(atan2f(side, front));
 	return ret;
+}
+
+void Car::SetCarNunber(int num)
+{
+	CarNunber = num;
 }
 
 void Car::OnCollision(GameObject* pTarget)

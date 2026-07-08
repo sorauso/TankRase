@@ -116,7 +116,22 @@ void TankBody::Update()
 	}
 
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
-	RotationTank();
+	//RotationTank();
+
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
+	RayCastData data1;
+	XMFLOAT3 startPos;
+	startPos = transform_.position_;
+	startPos.y = 0;
+	data1.start = startPos;           //レイの発射位置
+	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data1); //レイを発射
+	transform_.position_.y = 0 - data1.dist;
+
+	char buf[256];
+	sprintf_s(buf, "%.2f:%.2f:%.2f\n", data1.normalVector.x, data1.normalVector.y, data1.normalVector.z);
+	OutputDebugStringA(buf);
 
 	SetTpsRotCamera();
 }

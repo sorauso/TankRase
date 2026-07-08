@@ -30,7 +30,8 @@ void PlayScene::Initialize()
 	Instantiate<UI>(this);
 	for (int i = 0;i < 16;i++)
 	{
-		Instantiate<Car>(this);
+		Car* car = Instantiate<Car>(this);
+		car->SetCarNunber(i+1);
 	}
 }
 

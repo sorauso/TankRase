@@ -21,6 +21,7 @@ public:
 	void Release() override;
 	void OnCollision(GameObject* pTarget) override;
 	void MakeNextLandmark();
+	void GetAcquisitionCarNunber(int num);
 private:
 	int hModel_;
 	XMFLOAT3 move_;

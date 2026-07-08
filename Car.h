@@ -20,6 +20,8 @@ public:
 	//開放
 	void Release() override;
 	float GetLandmarkdirection();
+	void SetCarNunber(int num);
+	int GetCarNunber() { return CarNunber; };
 	void OnCollision(GameObject* pTarget) override;
 private:
 	int hModel_;
@@ -32,6 +34,7 @@ private:
 	float aRotY;
 	bool isHit;
 	GameObject* pHitTeaget;
+	int CarNunber;
 
 	struct CAR_STATES
 	{
