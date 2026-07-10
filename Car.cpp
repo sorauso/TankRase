@@ -42,6 +42,18 @@ void Car::Initialize()
 	isHitExplosion = false;
 
 	pHitTeaget = nullptr;
+
+
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
+	RayCastData data1;
+	XMFLOAT3 startPos;
+	startPos = transform_.position_;
+	startPos.y = 0;
+	data1.start = startPos;           //レイの発射位置
+	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data1); //レイを発射
+	transform_.position_.y = 0 - data1.dist;
 }
 
 void Car::Update()
@@ -77,7 +89,7 @@ void Car::Update()
 	}
 	transform_.rotate_.y += aRotY;
 
-	if (1)
+	if (not isHitCar && not isHitExplosion)
 	{
 		XMFLOAT3 Vtf;
 		XMStoreFloat3(&Vtf, Vt);
@@ -85,6 +97,10 @@ void Car::Update()
 		{
 			Vt += XMVectorSet(0.0f, 0.0f, myStates.ACCELERATION, 0.0f);
 		}
+	}
+	else
+	{
+		Vt -= XMVectorSet(0.0f, 0.0f, myStates.DECELERATION, 0.0f);
 	}
 	if (pHitTeaget != nullptr)
 	{
@@ -141,10 +157,19 @@ void Car::Update()
 	data1.start = startPos;           //レイの発射位置
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
-	transform_.position_.y = 0 - data1.dist;
 
-	isHitCar = false;
+	if (transform_.position_.y <= 0 - data1.dist)
+	{
+		transform_.position_.y = 0 - data1.dist;
+	}
+	else
+	{
+		transform_.position_.y -= 0.05f;
+	}
+
+
 	isHitExplosion = false;
+	isHitCar = false;
 }
 
 void Car::Draw()
