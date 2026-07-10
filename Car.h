@@ -32,7 +32,8 @@ private:
 private:
 	XMVECTOR Vt;
 	float aRotY;
-	bool isHit;
+	bool isHitCar;
+	bool isHitExplosion;
 	GameObject* pHitTeaget;
 	int CarNunber;
 

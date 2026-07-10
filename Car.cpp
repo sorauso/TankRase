@@ -38,7 +38,8 @@ void Car::Initialize()
 	Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	aRotY = 0;
 
-	isHit = false;
+	isHitCar = false;
+	isHitExplosion = false;
 
 	pHitTeaget = nullptr;
 }
@@ -85,11 +86,11 @@ void Car::Update()
 			Vt += XMVectorSet(0.0f, 0.0f, myStates.ACCELERATION, 0.0f);
 		}
 	}
-
-	if (isHit)
+	if (pHitTeaget != nullptr)
 	{
-		if (pHitTeaget != nullptr)
+		if (isHitCar)
 		{
+
 			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
 			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
 			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
@@ -112,6 +113,16 @@ void Car::Update()
 			{
 			}
 		}
+		if (isHitExplosion)
+		{
+			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
+			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
+			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
+			XMVECTOR vecT = myPosVC - tPosVC;
+			vecT = XMVector3Normalize(vecT);
+			myPosVC = myPosVC + vecT;
+			XMStoreFloat3(&transform_.position_, myPosVC);
+		}
 	}
 	else
 	{
@@ -131,7 +142,8 @@ void Car::Update()
 	Model::RayCast(hGroundModel, &data1); //レイを発射
 	transform_.position_.y = 0 - data1.dist;
 
-	isHit = false;
+	isHitCar = false;
+	isHitExplosion = false;
 }
 
 void Car::Draw()
@@ -180,7 +192,12 @@ void Car::OnCollision(GameObject* pTarget)
 	if (pTarget->GetObjectName() == "Car")
 	{
 		pHitTeaget = pTarget;
-		isHit = true;
+		isHitCar = true;
+	}
+	if (pTarget->GetObjectName() == "Bullet")
+	{
+		pHitTeaget = pTarget;
+		isHitExplosion = true;
 	}
 }
 

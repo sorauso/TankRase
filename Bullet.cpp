@@ -2,6 +2,7 @@
 #include "Engine\Model.h"
 #include "Engine/Input.h"
 #include "Engine/SphereCollider.h"
+#include "Ground.h"
 
 Bullet::Bullet(GameObject* parent)
 	:GameObject(parent, "Bullet"), hModel_(-1)
@@ -16,8 +17,7 @@ void Bullet::Initialize()
 {
 	hModel_ = Model::Load("Bullet.fbx");
 	move_ = XMFLOAT3(0, 0, 0);
-	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 0.3f);
-	AddCollider(collision);
+	inExplosion = false;
 }
 
 void Bullet::Update()
@@ -37,6 +37,22 @@ void Bullet::Update()
 		transform_.position_.y < -DereatPosition)
 	{
 		KillMe();
+	}
+
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
+	RayCastData data1;
+	XMFLOAT3 startPos;
+	startPos = transform_.position_;
+	startPos.y = 0;
+	data1.start = startPos;           //レイの発射位置
+	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data1); //レイを発射
+	if (transform_.position_.y < 0-data1.dist && not inExplosion)
+	{
+		SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 10.0f);
+		AddCollider(collision);
+		inExplosion = true;
 	}
 }
 
