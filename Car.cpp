@@ -131,6 +131,7 @@ void Car::Update()
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 	//RotationTank();
 
+	
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
 	RayCastData data1;

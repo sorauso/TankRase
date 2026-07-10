@@ -306,7 +306,7 @@ void TankHead::Update()
 	}
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
-		const float BULLET_SPEED = 0.2f;
+		const float BULLET_SPEED = 0.4f;
 		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
 		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Root");
 		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
