@@ -128,9 +128,15 @@ void TankBody::Update()
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
 	transform_.position_.y = 0 - data1.dist;
+	XMFLOAT3 n = data1.normalVector;
+	float rotY = transform_.rotate_.y * (XM_PI / 180);
+	n.x = n.x * cosf(rotY);
+	n.z = n.z * cosf(rotY);
+	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
+	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
 
 	char buf[256];
-	sprintf_s(buf, "%.2f:%.2f:%.2f\n", data1.normalVector.x, data1.normalVector.y, data1.normalVector.z);
+	sprintf_s(buf, "%.2f:%.2f:%.2f\n%.2f:%.2f:%.2f\n", data1.normalVector.x, data1.normalVector.y, data1.normalVector.z,transform_.rotate_.x, transform_.rotate_.y,transform_.rotate_.z);
 	OutputDebugStringA(buf);
 
 	SetTpsRotCamera();

@@ -602,10 +602,10 @@ void FbxParts::RayCast(RayCastData * data)
 			XMFLOAT3 B = XMFLOAT3(ver[0].x - ver[2].x, ver[0].y - ver[2].y, ver[0].z - ver[2].z);
 			XMVECTOR vec1 = XMLoadFloat3(&A);
 			XMVECTOR vec2 = XMLoadFloat3(&B);
-			//XMVECTOR N = XMVector3Normalize(XMVector3Cross(vec1, vec2));
-			XMVECTOR N = XMVector3Cross(vec1, vec2);
+			XMVECTOR N = XMVector3Normalize(XMVector3Cross(vec1, vec2));
 
-			XMStoreFloat3(&data->normalVector, N);
+			XMFLOAT3 outF3;
+			XMStoreFloat3(&outF3, N);
 
 			BOOL  hit = FALSE;
 			float dist = 0.0f;
@@ -617,6 +617,7 @@ void FbxParts::RayCast(RayCastData * data)
 			{
 				data->hit = TRUE;
 				data->dist = dist;
+				data->normalVector = outF3;
 			}
 		}
 	}

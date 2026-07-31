@@ -14,6 +14,7 @@ Landmark::Landmark(GameObject* parent)
 
 Landmark::~Landmark()
 {
+
 }
 
 void Landmark::Initialize()
@@ -40,6 +41,14 @@ void Landmark::Draw()
 void Landmark::Release()
 {
 	LandmarkMother* lmm = (LandmarkMother*)this->GetParent();
+	if (lmm == nullptr)
+	{
+		return;
+	}
+	if (pAcquisitionCar == nullptr)
+	{
+		return;
+	}
 	if (pAcquisitionCar->GetObjectName() == "tankBody")
 	{
 		lmm->GetAcquisitionCarNunber(0);
