@@ -13,6 +13,7 @@ namespace
 {
     XMVECTOR Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     float aRotY = 0;
+	float CanomPith = 0;
 }
 
 TankBody::TankBody(GameObject* parent)
@@ -310,11 +311,28 @@ void TankHead::Update()
 	{
 		transform_.rotate_.y += 0.5;
 	}
+	if (Input::IsKey(DIK_DOWN))
+	{
+		CanomPith -= 0.01;
+		if (CanomPith < -0.5)
+		{
+			CanomPith = -0.5;
+		}
+	}
+	if (Input::IsKey(DIK_UP))
+	{
+		CanomPith += 0.01;
+		if (CanomPith > 0.5)
+		{
+			CanomPith = 0.5;
+		}
+	}
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
 		const float BULLET_SPEED = 0.4f;
 		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
 		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Root");
+		cannonRoot.y += CanomPith;
 		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
 		XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
 		XMVECTOR vMove = vCannonTpo - vCannonRoot;
