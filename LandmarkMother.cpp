@@ -1,6 +1,6 @@
 #include "LandmarkMother.h"
 #include "Landmark.h"
-
+#include "Goal.h"
 namespace
 {
 	const int positionListMax = 15;
@@ -46,6 +46,12 @@ void LandmarkMother::MakeNextLandmark()
 {
 	if (counter_ > positionListMax)
 	{
+		return;
+	}
+	else if (counter_ == 1)
+	{
+		Goal* gl = Instantiate<Goal>(this);
+		gl->SetPosition(XMFLOAT3(positionX[counter_], 0, positionY[counter_]));
 		return;
 	}
 	Landmark* lm = Instantiate<Landmark>(this);

@@ -37,6 +37,7 @@ void PlayScene::Initialize()
 
 void PlayScene::Update()
 {
+	return;
 	if (counter > 30)
 	{
 		if (Input::IsKeyDown(DIK_P))

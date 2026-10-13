@@ -159,6 +159,7 @@
     <ClCompile Include="Engine\Text.cpp" />
     <ClCompile Include="Engine\Texture.cpp" />
     <ClCompile Include="Engine\Transform.cpp" />
+    <ClCompile Include="Goal.cpp" />
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="LandmarkMother.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="Engine\Text.h" />
     <ClInclude Include="Engine\Texture.h" />
     <ClInclude Include="Engine\Transform.h" />
+    <ClInclude Include="Goal.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="LandmarkMother.h" />

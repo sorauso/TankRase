@@ -49,9 +49,10 @@ void Landmark::Release()
 	{
 		return;
 	}
-	if (pAcquisitionCar->GetObjectName() == "tankBody")
+	if (pAcquisitionCar->GetObjectName() == "TankBody")
 	{
 		lmm->GetAcquisitionCarNunber(0);
+		lmm->MakeNextLandmark();
 	}
 	else if (pAcquisitionCar->GetObjectName() == "Car")
 	{
