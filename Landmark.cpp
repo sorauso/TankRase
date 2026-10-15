@@ -65,6 +65,10 @@ void Landmark::Release()
 void Landmark::OnCollision(GameObject* pTarget)
 {
 	pAcquisitionCar = pTarget;
+	if (pAcquisitionCar->GetObjectName() == "Bullet")
+	{
+		return;
+	}
 	KillMe();
 }
 

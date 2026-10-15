@@ -26,16 +26,20 @@ public:
 private:
 	int hModel_;
 private:
-	void RotationTank();
+	void RotationCar();
 
 	XMFLOAT3 MovingVectorCreation(Transform ts, XMVECTOR vt);
 private:
 	XMVECTOR Vt;
 	float aRotY;
 	bool isHitCar;
+	bool isHitTank;
 	bool isHitExplosion;
 	GameObject* pHitTeaget;
 	int CarNunber;
+	unsigned int groundFollowFrameCount;
+	float gravity;
+	float verticalVelocity;
 
 	struct CAR_STATES
 	{

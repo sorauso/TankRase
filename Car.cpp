@@ -39,9 +39,15 @@ void Car::Initialize()
 	aRotY = 0;
 
 	isHitCar = false;
+	isHitTank = false;
 	isHitExplosion = false;
 
 	pHitTeaget = nullptr;
+
+	groundFollowFrameCount = 0;
+
+	gravity = 9.8f;
+	verticalVelocity = 0.0f;
 
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
@@ -129,14 +135,40 @@ void Car::Update()
 			{
 			}
 		}
+		if (isHitTank)
+		{
+
+			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
+			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
+			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
+			XMVECTOR vecT = tPosVC - myPosVC;
+			float yaw = XMConvertToRadians(this->transform_.rotate_.y);
+			XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
+			XMVECTOR rotVC = XMLoadFloat3(&rotF3);
+			rotVC = XMVector3Normalize(rotVC);
+			vecT = XMVector3Normalize(vecT);
+			float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
+			if (side > 0.01f)
+			{
+				Vt += XMVectorSet(-0.02f, 0, 0, 0);
+			}
+			else if (side < -0.01f)
+			{
+				Vt += XMVectorSet(0.02f, 0, 0, 0);
+			}
+			else
+			{
+			}
+		}
 		if (isHitExplosion)
 		{
 			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
+			tPosF3.y = tPosF3.y - 3;
 			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
 			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
 			XMVECTOR vecT = myPosVC - tPosVC;
 			vecT = XMVector3Normalize(vecT);
-			myPosVC = myPosVC + vecT;
+			myPosVC = myPosVC + vecT * 2;
 			XMStoreFloat3(&transform_.position_, myPosVC);
 		}
 	}
@@ -145,31 +177,17 @@ void Car::Update()
 		Vt *= XMVectorSet(0, 1, 1, 1);
 	}
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
-	//RotationTank();
 
-	
-	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
-	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
-	RayCastData data1;
-	XMFLOAT3 startPos;
-	startPos = transform_.position_;
-	startPos.y = 0;
-	data1.start = startPos;           //レイの発射位置
-	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
-	Model::RayCast(hGroundModel, &data1); //レイを発射
-
-	if (transform_.position_.y <= 0 - data1.dist)
+	if (groundFollowFrameCount >= 2)
 	{
-		transform_.position_.y = 0 - data1.dist;
-	}
-	else
-	{
-		transform_.position_.y -= 0.05f;
+		RotationCar();
+		groundFollowFrameCount = 0;
 	}
 
-
+	groundFollowFrameCount++;
 	isHitExplosion = false;
 	isHitCar = false;
+	isHitTank = false;
 }
 
 void Car::Draw()
@@ -220,6 +238,11 @@ void Car::OnCollision(GameObject* pTarget)
 		pHitTeaget = pTarget;
 		isHitCar = true;
 	}
+	if (pTarget->GetObjectName() == "TankBody")
+	{
+		pHitTeaget = pTarget;
+		isHitTank = true;
+	}
 	if (pTarget->GetObjectName() == "Bullet")
 	{
 		pHitTeaget = pTarget;
@@ -227,67 +250,34 @@ void Car::OnCollision(GameObject* pTarget)
 	}
 }
 
-void Car::RotationTank()
+void Car::RotationCar()
 {
-	float BoxSozeX = 1.5f;
-	float BoxSozeZ = 2.5f;
-	XMFLOAT3 rayPos = transform_.position_;
-	XMMATRIX matRot = XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.y));
-	XMVECTOR vPos = { 0.0f,0.0f,0.0f,0.0f };
-	XMVECTOR ryaMovePos = XMLoadFloat3(&rayPos);
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
 	RayCastData data1;
 	XMFLOAT3 startPos;
-	vPos = { -BoxSozeX ,0,0,0 };
-	vPos = XMVector3TransformCoord(vPos, matRot);
-	XMStoreFloat3(&startPos, ryaMovePos + vPos);
+	startPos = transform_.position_;
 	startPos.y = 0;
 	data1.start = startPos;           //レイの発射位置
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
-
-	RayCastData data2;
-	vPos = { BoxSozeX ,0,0,0 };
-	vPos = XMVector3TransformCoord(vPos, matRot);
-	XMStoreFloat3(&startPos, ryaMovePos + vPos);
-	startPos.y = 0;
-	data2.start = startPos;      //レイの発射位置
-	data2.dir = XMFLOAT3(0, -1, 0);    //レイの方向
-	Model::RayCast(hGroundModel, &data2); //レイを発射
-
-	RayCastData data3;
-	vPos = { 0 ,0,BoxSozeZ,0 };
-	vPos = XMVector3TransformCoord(vPos, matRot);
-	XMStoreFloat3(&startPos, ryaMovePos + vPos);
-	startPos.y = 0;
-	data3.start = startPos;        //レイの発射位置
-	data3.dir = XMFLOAT3(0, -1, 0);    //レイの方向
-	Model::RayCast(hGroundModel, &data3); //レイを発射
-
-	RayCastData data4;
-	vPos = { 0 ,0,-BoxSozeZ,0 };
-	vPos = XMVector3TransformCoord(vPos, matRot);
-	XMStoreFloat3(&startPos, ryaMovePos + vPos);
-	startPos.y = 0;
-	data4.start = startPos;           //レイの発射位置
-	data4.dir = XMFLOAT3(0, -1, 0);    //レイの方向
-	Model::RayCast(hGroundModel, &data4); //レイを発射
-
-	float d1y = (data1.dist - data2.dist) / 2;
-	float d1s = atan2(d1y, BoxSozeX / 2);
-
-	transform_.rotate_.z = d1s * 180.0f / 3.14159265f;
-
-	float d2y = (data3.dist - data4.dist) / 2;
-	float d2s = atan2(d2y, BoxSozeZ / 2);
-
-	transform_.rotate_.x = d2y * 180.0f / 3.14159265f;
-
-	float Mini = min(min(data1.dist, data2.dist), min(data3.dist, data4.dist));
-	float Maxe = max(max(data1.dist, data2.dist), max(data3.dist, data4.dist));
-
-	transform_.position_.y = 0 - (Mini + Maxe) / 2;
+	transform_.position_.y = 0 - data1.dist;
+	XMFLOAT3 n = data1.normalVector;
+	float rotY = transform_.rotate_.y * (XM_PI / 180);
+	n.x = n.x * cosf(rotY);
+	n.z = n.z * cosf(rotY);
+	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
+	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
+	if (transform_.position_.y <= 0 - data1.dist)
+	{
+		transform_.position_.y = 0 - data1.dist;
+		verticalVelocity = 0;
+	}
+	else
+	{
+		transform_.position_.y -= verticalVelocity;
+		verticalVelocity += gravity;
+	}
 }
 
 XMFLOAT3 Car::MovingVectorCreation(Transform ts, XMVECTOR vt)

@@ -23,9 +23,12 @@ public:
 	void SetMoveVector(XMFLOAT3 mv);
 	void SetPosition(XMFLOAT3 mv) { transform_.position_ = mv; };
 	void OnCollision(GameObject* pTarget) override;
+	bool OnProjectileImpact();
 private:
 	int hModel_;
 	XMFLOAT3 move_;
 	bool inExplosion;
+	float destroyTimer;
+	unsigned int groundFollowFrameCount;
 };
 
