@@ -22,6 +22,8 @@ public:
 	float GetLandmarkdirection();
 private:
 	int hModel_;
+	float gravity;
+	float verticalVelocity;
 private:
 	void RotationTank();
 	void SetTpsRotCamera();

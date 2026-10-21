@@ -52,7 +52,6 @@ void Landmark::Release()
 	if (pAcquisitionCar->GetObjectName() == "TankBody")
 	{
 		lmm->GetAcquisitionCarNunber(0);
-		lmm->MakeNextLandmark();
 	}
 	else if (pAcquisitionCar->GetObjectName() == "Car")
 	{
@@ -66,6 +65,10 @@ void Landmark::Release()
 void Landmark::OnCollision(GameObject* pTarget)
 {
 	pAcquisitionCar = pTarget;
+	if (pAcquisitionCar->GetObjectName() == "Bullet")
+	{
+		return;
+	}
 	KillMe();
 }
 

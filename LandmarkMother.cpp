@@ -48,7 +48,7 @@ void LandmarkMother::MakeNextLandmark()
 	{
 		return;
 	}
-	else if (counter_ == 1)
+	else if (counter_ == positionListMax)
 	{
 		Goal* gl = Instantiate<Goal>(this);
 		gl->SetPosition(XMFLOAT3(positionX[counter_], 0, positionY[counter_]));
