@@ -40,6 +40,7 @@ private:
 	unsigned int groundFollowFrameCount;
 	float gravity;
 	float verticalVelocity;
+	float verticalVelocityMax;
 
 	struct CAR_STATES
 	{

@@ -7,6 +7,7 @@
 
 #include "Ground.h"
 #include "Landmark.h"
+#include "Engine/Timer.h"
 
 Car::Car(GameObject* parent)
     :GameObject(parent, "Car"), hModel_(-1)
@@ -48,6 +49,7 @@ void Car::Initialize()
 
 	gravity = 9.8f;
 	verticalVelocity = 0.0f;
+	verticalVelocityMax = 40.0f;
 
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
@@ -64,6 +66,10 @@ void Car::Initialize()
 
 void Car::Update()
 {
+	const int STAGE_SIZE = 245;
+
+	XMFLOAT3 oldPostion = transform_.position_;
+
 	if (GetLandmarkdirection() < -5)
 	{
 		if (aRotY > -1.5f)
@@ -93,9 +99,11 @@ void Car::Update()
 			aRotY = 0.0f;
 		}
 	}
-	transform_.rotate_.y += aRotY;
-
-	if (not isHitCar && not isHitExplosion)
+	if (!isHitExplosion)
+	{
+		transform_.rotate_.y += aRotY;
+	}
+	if (! isHitCar || ! isHitExplosion)
 	{
 		XMFLOAT3 Vtf;
 		XMStoreFloat3(&Vtf, Vt);
@@ -163,12 +171,12 @@ void Car::Update()
 		if (isHitExplosion)
 		{
 			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
-			tPosF3.y = tPosF3.y - 3;
+			tPosF3.y = tPosF3.y - 10;
 			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
 			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
 			XMVECTOR vecT = myPosVC - tPosVC;
 			vecT = XMVector3Normalize(vecT);
-			myPosVC = myPosVC + vecT * 2;
+			myPosVC = myPosVC + vecT * 20.0f *Timer::GetDeltaTime();
 			XMStoreFloat3(&transform_.position_, myPosVC);
 		}
 	}
@@ -180,14 +188,22 @@ void Car::Update()
 
 	if (groundFollowFrameCount >= 2)
 	{
-		RotationCar();
+		
 		groundFollowFrameCount = 0;
 	}
-
+	RotationCar();
 	groundFollowFrameCount++;
-	isHitExplosion = false;
 	isHitCar = false;
 	isHitTank = false;
+
+	if (transform_.position_.x > STAGE_SIZE || transform_.position_.x < -STAGE_SIZE)
+	{
+		transform_.position_.x = oldPostion.x;
+	}
+	if (transform_.position_.z > STAGE_SIZE || transform_.position_.z < -STAGE_SIZE)
+	{
+		transform_.position_.z = oldPostion.z;
+	}
 }
 
 void Car::Draw()
@@ -261,22 +277,30 @@ void Car::RotationCar()
 	data1.start = startPos;           //レイの発射位置
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
-	transform_.position_.y = 0 - data1.dist;
 	XMFLOAT3 n = data1.normalVector;
 	float rotY = transform_.rotate_.y * (XM_PI / 180);
 	n.x = n.x * cosf(rotY);
 	n.z = n.z * cosf(rotY);
 	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
 	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
-	if (transform_.position_.y <= 0 - data1.dist)
+
+	float nextY = transform_.position_.y - verticalVelocity * Timer::GetDeltaTime();
+
+
+	if (nextY <= 0 - data1.dist)
 	{
 		transform_.position_.y = 0 - data1.dist;
 		verticalVelocity = 0;
+		isHitExplosion = false;
 	}
 	else
 	{
-		transform_.position_.y -= verticalVelocity;
-		verticalVelocity += gravity;
+		transform_.position_.y -= verticalVelocity * Timer::GetDeltaTime();
+		verticalVelocity += gravity * Timer::GetDeltaTime();
+		if (verticalVelocity >= verticalVelocityMax)
+		{
+			verticalVelocity = verticalVelocityMax;
+		}
 	}
 }
 

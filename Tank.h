@@ -24,6 +24,7 @@ private:
 	int hModel_;
 	float gravity;
 	float verticalVelocity;
+	float verticalVelocityMax;
 private:
 	void RotationTank();
 	void SetTpsRotCamera();

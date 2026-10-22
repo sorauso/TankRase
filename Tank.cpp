@@ -4,6 +4,7 @@
 #include "Engine/Debug.h"
 #include "Engine/Camera.h"
 #include "Engine/SphereCollider.h"
+#include "Engine/Timer.h"
 
 #include "Bullet.h"
 #include "Ground.h"
@@ -27,7 +28,7 @@ TankBody::~TankBody()
 
 void TankBody::Initialize()
 {
-    hModel_ = Model::Load("TankBody.fbx");
+    hModel_ = Model::Load("Crusader.fbx");
     assert(hModel_ >= 0);
     Instantiate<TankHead>(this);
 	transform_.position_ = XMFLOAT3(-220,0,220);
@@ -35,6 +36,8 @@ void TankBody::Initialize()
 	AddCollider(collision);
 	gravity = 9.8f;
 	verticalVelocity = 0.0f;
+	verticalVelocityMax = 10.0f;
+	transform_.scale_ = XMFLOAT3(0.02,0.02,0.02);
 }
 
 void TankBody::Update()
@@ -171,22 +174,29 @@ void TankBody::RotationTank()
 	data1.start = startPos;           //レイの発射位置
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
-	transform_.position_.y = 0 - data1.dist;
 	XMFLOAT3 n = data1.normalVector;
 	float rotY = transform_.rotate_.y * (XM_PI / 180);
 	n.x = n.x * cosf(rotY);
 	n.z = n.z * cosf(rotY);
 	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
 	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
-	if (transform_.position_.y <= 0 - data1.dist)
+
+	float nextY = transform_.position_.y - verticalVelocity * Timer::GetDeltaTime();
+
+
+	if (nextY <= 0 - data1.dist)
 	{
 		transform_.position_.y = 0 - data1.dist;
 		verticalVelocity = 0;
 	}
 	else
 	{
-		transform_.position_.y -= verticalVelocity;
-		verticalVelocity += gravity;
+		transform_.position_.y -= verticalVelocity * Timer::GetDeltaTime();;
+		verticalVelocity += gravity * Timer::GetDeltaTime();
+		if (verticalVelocity >= verticalVelocityMax)
+		{
+			verticalVelocity = verticalVelocityMax;
+		}
 	}
 }
 
