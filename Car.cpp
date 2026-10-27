@@ -44,8 +44,8 @@ void Car::Initialize()
 	isHitExplosion = false;
 
 	pHitTeaget = nullptr;
+	isFlying = false;
 
-	groundFollowFrameCount = 0;
 
 	gravity = 9.8f;
 	verticalVelocity = 0.0f;
@@ -70,131 +70,46 @@ void Car::Update()
 
 	XMFLOAT3 oldPostion = transform_.position_;
 
-	if (GetLandmarkdirection() < -5)
-	{
-		if (aRotY > -1.5f)
-		{
-			aRotY -= myStates.rotSpeed;
-		}
-	}
-	else if (GetLandmarkdirection() > 5)
-	{
-		if (aRotY < 1.5f)
-		{
-			aRotY += myStates.rotSpeed;
-		}
-	}
-	else
-	{
-		if (aRotY > 0.01f)
-		{
-			aRotY -= myStates.rotSpeed;
-		}
-		else if (aRotY < -0.01f)
-		{
-			aRotY += myStates.rotSpeed;
-		}
-		else
-		{
-			aRotY = 0.0f;
-		}
-	}
-	if (!isHitExplosion)
-	{
-		transform_.rotate_.y += aRotY;
-	}
-	if (! isHitCar || ! isHitExplosion)
-	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z < myStates.ACCELERTION_MAX)
-		{
-			Vt += XMVectorSet(0.0f, 0.0f, myStates.ACCELERATION, 0.0f);
-		}
-	}
-	else
-	{
-		Vt -= XMVectorSet(0.0f, 0.0f, myStates.DECELERATION, 0.0f);
-	}
+	HandRing();
+	AcceleWerk();
 	if (pHitTeaget != nullptr)
 	{
 		if (isHitCar)
 		{
-
-			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
-			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
-			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
-			XMVECTOR vecT = tPosVC - myPosVC;
-			float yaw = XMConvertToRadians(this->transform_.rotate_.y);
-			XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
-			XMVECTOR rotVC = XMLoadFloat3(&rotF3);
-			rotVC = XMVector3Normalize(rotVC);
-			vecT = XMVector3Normalize(vecT);
-			float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
-			if (side > 0.01f)
-			{
-				Vt += XMVectorSet(-0.01f, 0, 0, 0);
-			}
-			else if (side < -0.01f)
-			{
-				Vt += XMVectorSet(0.01f, 0, 0, 0);
-			}
-			else
-			{
-			}
+			XMFLOAT3 Vtf;
+			XMStoreFloat3(&Vtf, Vt);
+			Vtf = HitObjevtMove(pHitTeaget,transform_,0.01f,Vtf);
+			Vt = XMLoadFloat3(&Vtf);
 		}
 		if (isHitTank)
 		{
-
-			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
-			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
-			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
-			XMVECTOR vecT = tPosVC - myPosVC;
-			float yaw = XMConvertToRadians(this->transform_.rotate_.y);
-			XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
-			XMVECTOR rotVC = XMLoadFloat3(&rotF3);
-			rotVC = XMVector3Normalize(rotVC);
-			vecT = XMVector3Normalize(vecT);
-			float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
-			if (side > 0.01f)
-			{
-				Vt += XMVectorSet(-0.02f, 0, 0, 0);
-			}
-			else if (side < -0.01f)
-			{
-				Vt += XMVectorSet(0.02f, 0, 0, 0);
-			}
-			else
-			{
-			}
+			XMFLOAT3 Vtf;
+			XMStoreFloat3(&Vtf, Vt);
+			Vtf = HitObjevtMove(pHitTeaget, transform_, 0.02f,Vtf);
+			Vt = XMLoadFloat3(&Vtf);
 		}
-		if (isHitExplosion)
+		if (!isFlying)
 		{
-			XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
-			tPosF3.y = tPosF3.y - 10;
-			XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
-			XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
-			XMVECTOR vecT = myPosVC - tPosVC;
-			vecT = XMVector3Normalize(vecT);
-			myPosVC = myPosVC + vecT * 20.0f *Timer::GetDeltaTime();
-			XMStoreFloat3(&transform_.position_, myPosVC);
+			if (isHitExplosion)
+			{
+				XMFLOAT3 tPosF3 = pHitTeaget->GetPosition();
+				tPosF3.y = tPosF3.y - 10;
+				XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
+				XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
+				XMVECTOR vecT = myPosVC - tPosVC;
+				vecT = XMVector3Normalize(vecT);
+				myPosVC = vecT * 100.0f * Timer::GetDeltaTime();
+				Vt += myPosVC;
+				isFlying = true;
+			}
 		}
-	}
-	else
-	{
-		Vt *= XMVectorSet(0, 1, 1, 1);
 	}
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 
-	if (groundFollowFrameCount >= 2)
-	{
-		
-		groundFollowFrameCount = 0;
-	}
 	RotationCar();
-	groundFollowFrameCount++;
 	isHitCar = false;
 	isHitTank = false;
+	isHitExplosion = false;
 
 	if (transform_.position_.x > STAGE_SIZE || transform_.position_.x < -STAGE_SIZE)
 	{
@@ -281,17 +196,22 @@ void Car::RotationCar()
 	float rotY = transform_.rotate_.y * (XM_PI / 180);
 	n.x = n.x * cosf(rotY);
 	n.z = n.z * cosf(rotY);
-	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
-	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
+	GroundRotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
+	GroundRotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
 
+	transform_.rotate_.x = transform_.rotate_.x + (GroundRotate_.x - transform_.rotate_.x) * Timer::GetDeltaTime();
+	transform_.rotate_.z = transform_.rotate_.z + (GroundRotate_.z - transform_.rotate_.z) * Timer::GetDeltaTime();
+
+	//次のフレームの時のポジションを計算
 	float nextY = transform_.position_.y - verticalVelocity * Timer::GetDeltaTime();
 
-
+	//落下処理
 	if (nextY <= 0 - data1.dist)
 	{
 		transform_.position_.y = 0 - data1.dist;
 		verticalVelocity = 0;
-		isHitExplosion = false;
+		Vt = XMVectorSetY(Vt,0);
+		isFlying = false;
 	}
 	else
 	{
@@ -301,6 +221,89 @@ void Car::RotationCar()
 		{
 			verticalVelocity = verticalVelocityMax;
 		}
+	}
+}
+
+XMFLOAT3 Car::HitObjevtMove(GameObject* terget,Transform mytf,float pb,XMFLOAT3 Vt)
+{
+	XMVECTOR retv = XMLoadFloat3(&Vt);
+	XMFLOAT3 retf;
+	XMFLOAT3 tPosF3 = terget->GetPosition();
+	XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
+	XMVECTOR myPosVC = XMLoadFloat3(&mytf.position_);
+	XMVECTOR vecT = tPosVC - myPosVC;
+	float yaw = XMConvertToRadians(mytf.rotate_.y);
+	XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
+	XMVECTOR rotVC = XMLoadFloat3(&rotF3);
+	rotVC = XMVector3Normalize(rotVC);
+	vecT = XMVector3Normalize(vecT);
+	float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
+	if (side > 0.01f)
+	{
+		retv += XMVectorSet(-pb, 0, 0, 0);
+	}
+	else if (side < -0.01f)
+	{
+		retv += XMVectorSet(pb, 0, 0, 0);
+	}
+	else
+	{
+	}
+	XMStoreFloat3(&retf, retv);
+	return retf;
+}
+
+void Car::HandRing()
+{
+	if (GetLandmarkdirection() < -5)
+	{
+		if (aRotY > -1.5f)
+		{
+			aRotY -= myStates.rotSpeed;
+		}
+	}
+	else if (GetLandmarkdirection() > 5)
+	{
+		if (aRotY < 1.5f)
+		{
+			aRotY += myStates.rotSpeed;
+		}
+	}
+	else
+	{
+		if (aRotY > 0.01f)
+		{
+			aRotY -= myStates.rotSpeed;
+		}
+		else if (aRotY < -0.01f)
+		{
+			aRotY += myStates.rotSpeed;
+		}
+		else
+		{
+			aRotY = 0.0f;
+		}
+	}
+	if (!isFlying)
+	{
+		transform_.rotate_.y += aRotY;
+	}
+}
+
+void Car::AcceleWerk()
+{
+	if (!isHitCar || !isHitExplosion)
+	{
+		XMFLOAT3 Vtf;
+		XMStoreFloat3(&Vtf, Vt);
+		if (Vtf.z < myStates.ACCELERTION_MAX)
+		{
+			Vt += XMVectorSet(0.0f, 0.0f, myStates.ACCELERATION, 0.0f);
+		}
+	}
+	else
+	{
+		Vt -= XMVectorSet(0.0f, 0.0f, myStates.DECELERATION, 0.0f);
 	}
 }
 

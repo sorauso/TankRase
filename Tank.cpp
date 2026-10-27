@@ -38,6 +38,17 @@ void TankBody::Initialize()
 	verticalVelocity = 0.0f;
 	verticalVelocityMax = 10.0f;
 	transform_.scale_ = XMFLOAT3(0.02,0.02,0.02);
+
+	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
+	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
+	RayCastData data1;
+	XMFLOAT3 startPos;
+	startPos = transform_.position_;
+	startPos.y = 0;
+	data1.start = startPos;           //レイの発射位置
+	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
+	Model::RayCast(hGroundModel, &data1); //レイを発射
+	transform_.position_.y = 0 - data1.dist;
 }
 
 void TankBody::Update()
@@ -178,8 +189,11 @@ void TankBody::RotationTank()
 	float rotY = transform_.rotate_.y * (XM_PI / 180);
 	n.x = n.x * cosf(rotY);
 	n.z = n.z * cosf(rotY);
-	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
-	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
+	GroundRotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
+	GroundRotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
+
+	transform_.rotate_.x = transform_.rotate_.x + (GroundRotate_.x - transform_.rotate_.x) * Timer::GetDeltaTime();
+	transform_.rotate_.z = transform_.rotate_.z + (GroundRotate_.z - transform_.rotate_.z) * Timer::GetDeltaTime();
 
 	float nextY = transform_.position_.y - verticalVelocity * Timer::GetDeltaTime();
 

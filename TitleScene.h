@@ -21,5 +21,7 @@ public:
 	void Release() override;
 private:
 	int hImage_;
+	int hModel_;
+	Transform tankTransform_;
 };
 

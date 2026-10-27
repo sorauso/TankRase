@@ -25,6 +25,7 @@ private:
 	float gravity;
 	float verticalVelocity;
 	float verticalVelocityMax;
+	XMFLOAT3 GroundRotate_;
 private:
 	void RotationTank();
 	void SetTpsRotCamera();

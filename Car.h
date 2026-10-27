@@ -27,7 +27,9 @@ private:
 	int hModel_;
 private:
 	void RotationCar();
-
+	XMFLOAT3 HitObjevtMove(GameObject* terget, Transform mytf, float pb, XMFLOAT3 Vt);
+	void HandRing();
+	void AcceleWerk();
 	XMFLOAT3 MovingVectorCreation(Transform ts, XMVECTOR vt);
 private:
 	XMVECTOR Vt;
@@ -35,12 +37,14 @@ private:
 	bool isHitCar;
 	bool isHitTank;
 	bool isHitExplosion;
+	bool isFlying;
 	GameObject* pHitTeaget;
 	int CarNunber;
 	unsigned int groundFollowFrameCount;
 	float gravity;
 	float verticalVelocity;
 	float verticalVelocityMax;
+	XMFLOAT3 GroundRotate_;
 
 	struct CAR_STATES
 	{
