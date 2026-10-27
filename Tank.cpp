@@ -29,6 +29,7 @@ TankBody::~TankBody()
 void TankBody::Initialize()
 {
     hModel_ = Model::Load("Crusader.fbx");
+	//hModel_ = Model::Load("TankBody.fbx");
     assert(hModel_ >= 0);
     Instantiate<TankHead>(this);
 	transform_.position_ = XMFLOAT3(-220,0,220);
@@ -38,6 +39,7 @@ void TankBody::Initialize()
 	verticalVelocity = 0.0f;
 	verticalVelocityMax = 10.0f;
 	transform_.scale_ = XMFLOAT3(0.02,0.02,0.02);
+	//transform_.scale_ = XMFLOAT3(1, 1, 1);
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
@@ -205,7 +207,7 @@ void TankBody::RotationTank()
 	}
 	else
 	{
-		transform_.position_.y -= verticalVelocity * Timer::GetDeltaTime();;
+		transform_.position_.y -= verticalVelocity * Timer::GetDeltaTime();
 		verticalVelocity += gravity * Timer::GetDeltaTime();
 		if (verticalVelocity >= verticalVelocityMax)
 		{
@@ -271,6 +273,7 @@ TankHead::~TankHead()
 void TankHead::Initialize()
 {
 	hModel_ = Model::Load("Tankhead.fbx");
+	transform_.scale_ = XMFLOAT3(50, 50, 50);
 }
 
 void TankHead::Update()
@@ -279,9 +282,24 @@ void TankHead::Update()
 	{
 		transform_.rotate_.y -= 0.5;
 	}
-	if (Input::IsKey(DIK_RIGHT))
+	else if (Input::IsKey(DIK_RIGHT))
 	{
 		transform_.rotate_.y += 0.5;
+	}
+	else
+	{
+		if (transform_.rotate_.y >= 0.1f)
+		{
+			transform_.rotate_.y -= 0.5;
+		}
+		else if (transform_.rotate_.y <= -0.1f)
+		{
+			transform_.rotate_.y += 0.5;
+		}
+		else
+		{
+			transform_.rotate_.y = 0.0;
+		}
 	}
 	if (Input::IsKey(DIK_DOWN))
 	{
@@ -291,7 +309,7 @@ void TankHead::Update()
 			CanomPith = -0.5;
 		}
 	}
-	if (Input::IsKey(DIK_UP))
+	else if (Input::IsKey(DIK_UP))
 	{
 		CanomPith += 0.01;
 		if (CanomPith > 0.5)
@@ -299,9 +317,24 @@ void TankHead::Update()
 			CanomPith = 0.5;
 		}
 	}
+	else
+	{
+		if (CanomPith >= 0.01f)
+		{
+			CanomPith -= 0.01;
+		}
+		else if (CanomPith <= -0.01f)
+		{
+			CanomPith += 0.01;
+		}
+		else
+		{
+			CanomPith = 0.0;
+		}
+	}
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
-		const float BULLET_SPEED = 0.4f;
+		const float BULLET_SPEED = 0.6f;
 		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
 		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Root");
 		cannonRoot.y += CanomPith;
@@ -321,7 +354,7 @@ void TankHead::Update()
 void TankHead::Draw()
 {
 	Model::SetTransform(hModel_, transform_);
-	Model::Draw(hModel_);
+	//Model::Draw(hModel_);
 }
 
 void TankHead::Release()

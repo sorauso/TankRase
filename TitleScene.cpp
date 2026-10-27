@@ -4,13 +4,20 @@
 #include "Engine/SceneManager.h"
 #include "Engine/Model.h"
 #include "Engine/Camera.h"
+#include "Engine/Timer.h"
+
 namespace
 {
-	int counter = 0;
-}
+	float counter = 0;
+	bool isStert = false;
+
+	const float TANK_ACCEL = 0.5f;
+	float tankSpeed = 0;
+	float tanckAccer = 0;
+} 
 
 TitleScene::TitleScene(GameObject* parent)
-	:GameObject(parent, "TitleScene"), hImage_(-1)
+	:GameObject(parent, "TitleScene"), hImage_(-1),hModel_(-1)
 {
 }
 
@@ -22,27 +29,39 @@ void TitleScene::Initialize()
 
 	hModel_ = Model::Load("Crusader.fbx");
 	assert(hModel_ >= 0);
-	tankTransform_.position_ = XMFLOAT3(-150, 0, 150);
+	tankTransform_.position_ = XMFLOAT3(-80, 0, 200);
 	tankTransform_.rotate_ = XMFLOAT3(0, 180, 0);
 
-	Camera::SetPosition(XMFLOAT3(-10, 10, 0));
-	Camera::SetTarget(XMFLOAT3(-30, 20, 30));
+	Camera::SetPosition(XMFLOAT3(0, 10, 0));
+	Camera::SetTarget(XMFLOAT3(-20, 20, 30));
 }
 
 void TitleScene::Update()
 {
+	counter+= Timer::GetDeltaTime();
 
-	if (counter > 30)
+	if (counter > 0.5f)
 	{
-		if (Input::IsKeyDown(DIK_P))
+		if (Input::IsKeyDown(DIK_SPACE))
 		{
-			SceneManager* sceneManager = (SceneManager*)(this->GetParent());
-			sceneManager->ChangeScene(SCENE_ID_PLAY);
+			isStert = true;
+			counter = 0;
 		}
 	}
-	else
+
+	if (!isStert)
 	{
-		counter++;
+		return;
+	}
+
+	tankTransform_.position_.z = tankTransform_.position_.z - tankSpeed;
+	tankSpeed += tanckAccer * Timer::GetDeltaTime();
+	tanckAccer += TANK_ACCEL;
+
+	if (counter > 1.5f)
+	{
+		SceneManager* sceneManager = (SceneManager*)(this->GetParent());
+		sceneManager->ChangeScene(SCENE_ID_PLAY);
 	}
 }
 
