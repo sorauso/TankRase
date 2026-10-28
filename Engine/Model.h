@@ -84,6 +84,13 @@ namespace Model
 	//戻値：ボーンの位置（ワールド座標）
 	XMFLOAT3 GetBonePosition(int handle, std::string boneName);
 
+	//任意のボーンの位置を移動
+	//引数：handle		調べたいモデルの番号
+	//引数：boneName	調べたいボーンの名前
+	//引数：position	移動量
+	//戻値：移動できたかどうか
+	bool MoveBonePosition(int handle, std::string boneName,XMFLOAT3 position);
+
 	//ワールド行列を設定
 	//引数：handle	設定したいモデルの番号
 	//引数：matrix	ワールド行列

@@ -145,6 +145,18 @@ void Fbx::Draw(Transform& transform, int frame)
 }
 
 
+bool Fbx::MoveBonePosition(std::string boneName, XMFLOAT3 position)
+{
+	for (int i = 0; i < parts_.size(); i++)
+	{
+		if (parts_[i]->MoveBonePosition(boneName, position))
+			return true;
+	}
+
+
+	return false;
+}
+
 //レイキャスト（レイを飛ばして当たり判定）
 void Fbx::RayCast(RayCastData * data)
 {

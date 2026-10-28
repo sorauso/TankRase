@@ -144,6 +144,12 @@ public:
 	//戻値：見つかればtrue
 	bool GetBonePosition(std::string boneName, XMFLOAT3	* position);
 
+	//任意のボーンの位置を移動
+	//引数：boneName	取得したいボーンの位置
+	//引数：position	移動量
+	//戻値：見つかればtrue
+	bool MoveBonePosition(std::string boneName, XMFLOAT3 position);
+
 	//スキンメッシュ情報を取得
 	//戻値：スキンメッシュ情報
 	FbxSkin* GetSkinInfo() { return pSkinInfo_; }

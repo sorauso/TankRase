@@ -15,6 +15,7 @@ namespace
     XMVECTOR Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     float aRotY = 0;
 	float CanomPith = 0;
+	float textY = 0;
 }
 
 TankBody::TankBody(GameObject* parent)
@@ -28,7 +29,7 @@ TankBody::~TankBody()
 
 void TankBody::Initialize()
 {
-    hModel_ = Model::Load("Crusader.fbx");
+    hModel_ = Model::Load("CrusaderII.fbx");
 	//hModel_ = Model::Load("TankBody.fbx");
     assert(hModel_ >= 0);
     Instantiate<TankHead>(this);
@@ -38,8 +39,7 @@ void TankBody::Initialize()
 	gravity = 9.8f;
 	verticalVelocity = 0.0f;
 	verticalVelocityMax = 10.0f;
-	transform_.scale_ = XMFLOAT3(0.02,0.02,0.02);
-	//transform_.scale_ = XMFLOAT3(1, 1, 1);
+	transform_.scale_ = XMFLOAT3(2, 2, 2);
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
@@ -138,6 +138,10 @@ void TankBody::Update()
 	RotationTank();
 
 	SetTpsRotCamera();
+
+	bool text = Model::MoveBonePosition(hModel_, "Head", XMFLOAT3(0, textY, 0));
+	assert(text);
+	textY++;
 }
 
 void TankBody::Draw()
@@ -272,8 +276,7 @@ TankHead::~TankHead()
 
 void TankHead::Initialize()
 {
-	hModel_ = Model::Load("Tankhead.fbx");
-	transform_.scale_ = XMFLOAT3(50, 50, 50);
+	hModel_ = Model::Load("CrusaderII.fbx");
 }
 
 void TankHead::Update()

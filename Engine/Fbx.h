@@ -85,6 +85,12 @@ public:
 	//戻値：ボーンの位置
 	XMFLOAT3 GetBonePosition(std::string boneName);
 
+	//任意のボーンの位置を移動
+	//引数：boneName	取得したいボーンの位置
+	//引数：position	移動量
+	//戻値：移動できたかどうか
+	bool MoveBonePosition(std::string boneName,XMFLOAT3 position);
+
 	//レイキャスト（レイを飛ばして当たり判定）
 	//引数：data	必要なものをまとめたデータ
 	void RayCast(RayCastData *data);
