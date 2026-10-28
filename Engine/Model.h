@@ -91,6 +91,13 @@ namespace Model
 	//戻値：移動できたかどうか
 	bool MoveBonePosition(int handle, std::string boneName,XMFLOAT3 position);
 
+	//任意のボーンを回転
+	//引数：handle		調べたいモデルの番号
+	//引数：boneName	調べたいボーンの名前
+	//引数：rotation	回転量
+	//戻値：移動できたかどうか
+	bool RotationBonePosition(int handle, std::string boneName, XMFLOAT3 rotation);
+
 	//ワールド行列を設定
 	//引数：handle	設定したいモデルの番号
 	//引数：matrix	ワールド行列

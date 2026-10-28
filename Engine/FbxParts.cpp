@@ -347,7 +347,15 @@ void FbxParts::InitSkelton(FbxMesh * pMesh)
 		int * piIndex = ppCluster_[i]->GetControlPointIndices();       //ボーン/ウェイト情報の番号
 		double * pdWeight = ppCluster_[i]->GetControlPointWeights();     //頂点ごとのウェイト情報
 
-																				 //頂点側からインデックスをたどって、頂点サイドで整理する
+		//デバッグ用に何ののボーンにどのくらい頂点がついているかを見るためのやつ
+		//OutputDebugStringA(ppCluster_[i]->GetLink()->GetName());
+		//OutputDebugStringA(":");
+		//std::string str = std::to_string(numIndex);
+		//const char* c_str = str.c_str();
+		//OutputDebugStringA(c_str);
+		//OutputDebugStringA("\n");
+		
+		//頂点側からインデックスをたどって、頂点サイドで整理する
 		for (int k = 0; k < numIndex; k++)
 		{
 			// 頂点に関連付けられたウェイト情報がボーン５本以上の場合は、重みの大きい順に４本に絞る
@@ -372,6 +380,7 @@ void FbxParts::InitSkelton(FbxMesh * pMesh)
 		}
 	}
 
+
 	//ボーンを生成
 	pBoneArray_ = new FbxParts::Bone[numBone_];
 	for (int i = 0; i < numBone_; i++)
@@ -390,6 +399,8 @@ void FbxParts::InitSkelton(FbxMesh * pMesh)
 			}
 		}
 		pBoneArray_[i].bindPose = XMLoadFloat4x4(&pose);
+		pBoneArray_[i].offset = XMFLOAT3(0,0,0);
+		pBoneArray_[i].rotation = XMFLOAT3(0, 0, 0);
 	}
 
 	// 一時的なメモリ領域を解放する
@@ -495,34 +506,77 @@ void FbxParts::DrawSkinAnime(Transform& transform, FbxTime time)
 			}
 		}
 
+		// ボーンの回転量
+		XMFLOAT3& rot = pBoneArray_[i].rotation;
+
+		// 回転行列を生成
+		XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(
+			XMConvertToRadians(rot.x),
+			XMConvertToRadians(rot.y),
+			XMConvertToRadians(rot.z)
+		);
+
 		// オフセット時のポーズの差分を計算する
 		pBoneArray_[i].newPose = XMLoadFloat4x4(&pose);
-		pBoneArray_[i].diffPose = XMMatrixInverse(nullptr, pBoneArray_[i].bindPose);
-		pBoneArray_[i].diffPose *= pBoneArray_[i].newPose;
+		//pBoneArray_[i].diffPose = XMMatrixInverse(nullptr, pBoneArray_[i].bindPose);
+		//pBoneArray_[i].diffPose *= pBoneArray_[i].newPose;
+
+		pBoneArray_[i].newPose = pBoneArray_[i].newPose * rotationMatrix;
+
+
+
+		pBoneArray_[i].diffPose = XMMatrixInverse(nullptr, pBoneArray_[i].bindPose) * pBoneArray_[i].newPose;
+
+		int test = 0;
 	}
 
 	// 各ボーンに対応した頂点の変形制御
 	for (DWORD i = 0; i < vertexCount_; i++)
 	{
-		// 各頂点ごとに、「影響するボーン×ウェイト値」を反映させた関節行列を作成する
-		XMMATRIX  matrix;
+		XMMATRIX matrix;
 		ZeroMemory(&matrix, sizeof(matrix));
+
+		float totalWeight = 0.0f;
+
 		for (int m = 0; m < numBone_; m++)
 		{
-			if (pWeightArray_[i].pBoneIndex[m] < 0)
-			{
-				break;
-			}
-			matrix += pBoneArray_[pWeightArray_[i].pBoneIndex[m]].diffPose * pWeightArray_[i].pBoneWeight[m];
+			int index = pWeightArray_[i].pBoneIndex[m];
 
+			if (index < 0)
+				break;
+
+			float weight = pWeightArray_[i].pBoneWeight[m];
+
+			matrix += pBoneArray_[index].diffPose * weight;
+			totalWeight += weight;
 		}
 
-		// 作成された関節行列を使って、頂点を変形する
-		XMVECTOR Pos = XMLoadFloat3(&pWeightArray_[i].posOrigin);
-		XMVECTOR Normal = XMLoadFloat3(&pWeightArray_[i].normalOrigin);
-		XMStoreFloat3(&pVertexData_[i].position,XMVector3TransformCoord(Pos, matrix));
-		XMStoreFloat3(&pVertexData_[i].normal, XMVector3TransformCoord(Normal, matrix));
+		if (totalWeight > 0.0001f)
+		{
+			matrix *= (1.0f / totalWeight);
+		}
+		else
+		{
+			matrix = XMMatrixIdentity();
+		}
 
+		XMVECTOR pos =
+			XMLoadFloat3(&pWeightArray_[i].posOrigin);
+
+		XMVECTOR normal =
+			XMLoadFloat3(&pWeightArray_[i].normalOrigin);
+
+		XMStoreFloat3(
+			&pVertexData_[i].position,
+			XMVector3TransformCoord(pos, matrix)
+		);
+
+		XMStoreFloat3(
+			&pVertexData_[i].normal,
+			XMVector3Normalize(
+				XMVector3TransformNormal(normal, matrix)
+			)
+		);
 	}
 
 	// 頂点バッファをロックして、変形させた後の頂点情報で上書きする
@@ -584,14 +638,22 @@ bool FbxParts::MoveBonePosition(std::string boneName, XMFLOAT3 position)
 	{
 		if (boneName == ppCluster_[i]->GetLink()->GetName())
 		{
-			FbxAMatrix  matrix;
+			pBoneArray_[i].offset = position;
+			return true;
+		}
 
-			matrix[3][0] = position.x;
-			matrix[3][1] = position.y;
-			matrix[3][2] = position.z;
-			
-			ppCluster_[i]->SetTransformLinkMatrix(matrix);
+	}
 
+	return false;
+}
+
+bool FbxParts::RotationBonePosition(std::string boneName, XMFLOAT3 rotation)
+{
+	for (int i = 0; i < numBone_; i++)
+	{
+		if (boneName == ppCluster_[i]->GetLink()->GetName())
+		{
+			pBoneArray_[i].rotation = rotation;
 			return true;
 		}
 

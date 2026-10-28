@@ -147,14 +147,26 @@ void Fbx::Draw(Transform& transform, int frame)
 
 bool Fbx::MoveBonePosition(std::string boneName, XMFLOAT3 position)
 {
+	bool found= false;
 	for (int i = 0; i < parts_.size(); i++)
 	{
 		if (parts_[i]->MoveBonePosition(boneName, position))
-			return true;
+			found =  true;
 	}
 
+	return found;
+}
 
-	return false;
+bool Fbx::RotationBonePosition(std::string boneName, XMFLOAT3 rotation)
+{
+	bool found = false;
+	for (int i = 0; i < parts_.size(); i++)
+	{
+		if (parts_[i]->RotationBonePosition(boneName, rotation))
+			found = true;
+	}
+
+	return found;
 }
 
 //レイキャスト（レイを飛ばして当たり判定）

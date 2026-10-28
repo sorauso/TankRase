@@ -164,6 +164,11 @@ namespace Model
 		return _datas[handle]->pFbx->MoveBonePosition(boneName,position);
 	}
 
+	bool RotationBonePosition(int handle, std::string boneName, XMFLOAT3 rotation)
+	{
+		return _datas[handle]->pFbx->RotationBonePosition(boneName, rotation);
+	}
+
 	//ƒ[ƒ‹ƒhs—ñ‚ğİ’è
 	void SetTransform(int handle, Transform & transform)
 	{

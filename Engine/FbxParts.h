@@ -57,6 +57,9 @@ class FbxParts
 		XMMATRIX  bindPose;      // 初期ポーズ時のボーン変換行列
 		XMMATRIX  newPose;       // アニメーションで変化したときのボーン変換行列
 		XMMATRIX  diffPose;      // mBindPose に対する mNowPose の変化量
+
+		XMFLOAT3 offset;		 //ボーンを動かすときの変化量
+		XMFLOAT3 rotation;		 //ボーンを回転させるときの変化量
 	};
 
 	// ウェイト構造体（ボーンと頂点の関連付け）
@@ -149,6 +152,12 @@ public:
 	//引数：position	移動量
 	//戻値：見つかればtrue
 	bool MoveBonePosition(std::string boneName, XMFLOAT3 position);
+
+	//任意のボーンを回転
+	//引数：boneName	取得したいボーンの位置
+	//引数：rotation	回転量
+	//戻値：見つかればtrue
+	bool RotationBonePosition(std::string boneName, XMFLOAT3 rotation);
 
 	//スキンメッシュ情報を取得
 	//戻値：スキンメッシュ情報

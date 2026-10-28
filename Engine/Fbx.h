@@ -91,6 +91,12 @@ public:
 	//戻値：移動できたかどうか
 	bool MoveBonePosition(std::string boneName,XMFLOAT3 position);
 
+	//任意のボーンを回転
+	//引数：boneName	取得したいボーンの位置
+	//引数：rotation	回転量
+	//戻値：移動できたかどうか
+	bool RotationBonePosition(std::string boneName, XMFLOAT3 rotation);
+
 	//レイキャスト（レイを飛ばして当たり判定）
 	//引数：data	必要なものをまとめたデータ
 	void RayCast(RayCastData *data);

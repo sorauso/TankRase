@@ -15,7 +15,8 @@ namespace
     XMVECTOR Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
     float aRotY = 0;
 	float CanomPith = 0;
-	float textY = 0;
+
+	float test = 0;
 }
 
 TankBody::TankBody(GameObject* parent)
@@ -51,6 +52,8 @@ void TankBody::Initialize()
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
 	transform_.position_.y = 0 - data1.dist;
+
+	Model::SetAnimFrame(hModel_, 0, 100, 1);
 }
 
 void TankBody::Update()
@@ -137,11 +140,32 @@ void TankBody::Update()
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 	RotationTank();
 
+	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(0,0, 0)));
+	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0,0.5, 0)));
+
+	test += 1;
+
 	SetTpsRotCamera();
 
-	bool text = Model::MoveBonePosition(hModel_, "Head", XMFLOAT3(0, textY, 0));
-	assert(text);
-	textY++;
+
+	if (Input::IsKeyDown(DIK_SPACE))
+	{
+		const float BULLET_SPEED = 0.6f;
+		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
+		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Under");
+		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
+		XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
+		XMVECTOR vMove = vCannonRoot - vCannonTpo;
+		vMove = XMVector3Normalize(vMove);
+		vMove = XMVectorScale(vMove, BULLET_SPEED);
+		XMFLOAT3 fMove;
+		XMStoreFloat3(&fMove, vMove);
+		Bullet* pBullet = Instantiate<Bullet>(this->GetParent());
+		pBullet->SetMoveVector(fMove);
+		vCannonTpo -= XMLoadFloat3(&transform_.position_);
+		XMStoreFloat3(&cannonTpo,vCannonTpo);
+		pBullet->SetPosition(cannonTpo);
+	}
 }
 
 void TankBody::Draw()
@@ -276,7 +300,7 @@ TankHead::~TankHead()
 
 void TankHead::Initialize()
 {
-	hModel_ = Model::Load("CrusaderII.fbx");
+	hModel_ = Model::Load("TankHead.fbx");
 }
 
 void TankHead::Update()
@@ -337,6 +361,7 @@ void TankHead::Update()
 	}
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
+		return;
 		const float BULLET_SPEED = 0.6f;
 		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
 		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Root");

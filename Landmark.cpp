@@ -25,6 +25,8 @@ void Landmark::Initialize()
 	AddCollider(collision);
 
 	transform_.scale_ = XMFLOAT3(10,10,10);
+
+	Model::SetAnimFrame(hModel_, 0, 100, 1);
 }
 
 void Landmark::Update()
