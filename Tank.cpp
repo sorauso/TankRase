@@ -33,7 +33,7 @@ void TankBody::Initialize()
     hModel_ = Model::Load("CrusaderV.fbx");
 	//hModel_ = Model::Load("TankBody.fbx");
     assert(hModel_ >= 0);
-    Instantiate<TankHead>(this);
+   // Instantiate<TankHead>(this);
 	transform_.position_ = XMFLOAT3(-220,0,220);
 	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 2.0f);
 	AddCollider(collision);
@@ -141,6 +141,7 @@ void TankBody::Update()
 	RotationTank();
 
 	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(0,0, 0)));
+	assert(Model::RotationBonePosition(hModel_, "Top", XMFLOAT3(0, 0, 0)));
 	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0, test, 0)));
 
 	test += 0.1;
@@ -150,7 +151,7 @@ void TankBody::Update()
 
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
-		const float BULLET_SPEED = 0.6f;
+		const float BULLET_SPEED = 0.1f;
 		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
 		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Under");
 		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
@@ -162,9 +163,7 @@ void TankBody::Update()
 		XMStoreFloat3(&fMove, vMove);
 		Bullet* pBullet = Instantiate<Bullet>(this->GetParent());
 		pBullet->SetMoveVector(fMove);
-		vCannonTpo -= XMLoadFloat3(&transform_.position_);
-		XMStoreFloat3(&cannonTpo,vCannonTpo);
-		pBullet->SetPosition(cannonTpo);
+		pBullet->SetPosition(cannonRoot);
 	}
 }
 
