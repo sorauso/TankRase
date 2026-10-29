@@ -30,7 +30,7 @@ TankBody::~TankBody()
 
 void TankBody::Initialize()
 {
-    hModel_ = Model::Load("CrusaderII.fbx");
+    hModel_ = Model::Load("CrusaderV.fbx");
 	//hModel_ = Model::Load("TankBody.fbx");
     assert(hModel_ >= 0);
     Instantiate<TankHead>(this);
@@ -40,7 +40,7 @@ void TankBody::Initialize()
 	gravity = 9.8f;
 	verticalVelocity = 0.0f;
 	verticalVelocityMax = 10.0f;
-	transform_.scale_ = XMFLOAT3(2, 2, 2);
+	transform_.scale_ = XMFLOAT3(0.02, 0.02, 0.02);
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
@@ -53,7 +53,7 @@ void TankBody::Initialize()
 	Model::RayCast(hGroundModel, &data1); //レイを発射
 	transform_.position_.y = 0 - data1.dist;
 
-	Model::SetAnimFrame(hModel_, 0, 100, 1);
+	//Model::SetAnimFrame(hModel_, 0, 100, 1);
 }
 
 void TankBody::Update()
@@ -141,9 +141,9 @@ void TankBody::Update()
 	RotationTank();
 
 	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(0,0, 0)));
-	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0,0.5, 0)));
+	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0, test, 0)));
 
-	test += 1;
+	test += 0.1;
 
 	SetTpsRotCamera();
 
