@@ -26,6 +26,7 @@ public:
 	bool OnProjectileImpact();
 private:
 	int hModel_;
+	int hExplosionModel_;
 	XMFLOAT3 move_;
 	bool inExplosion;
 	float destroyTimer;

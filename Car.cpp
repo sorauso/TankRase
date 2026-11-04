@@ -13,6 +13,12 @@ namespace
 {
 	const int STAGE_SIZE = 245;
 	const float speed = 0.1f;
+	const float EXPLOSION_KNOCKBACK_FORCE = 150;
+	// 車との衝突時の反発力
+	constexpr float CAR_COLLISION_REPULSION_FORCE = 0.02f;
+
+	// 戦車との衝突時の反発力
+	constexpr float TANK_COLLISION_REPULSION_FORCE = 0.02f;
 }
 
 Car::Car(GameObject* parent)
@@ -84,14 +90,14 @@ void Car::Update()
 		{
 			XMFLOAT3 Vtf;
 			XMStoreFloat3(&Vtf, Vt);
-			Vtf = HitObjevtMove(pHitTeaget,transform_,0.01f,Vtf);
+			Vtf = HitObjevtMove(pHitTeaget,transform_, CAR_COLLISION_REPULSION_FORCE,Vtf);
 			Vt = XMLoadFloat3(&Vtf);
 		}
 		if (isHitTank)
 		{
 			XMFLOAT3 Vtf;
 			XMStoreFloat3(&Vtf, Vt);
-			Vtf = HitObjevtMove(pHitTeaget, transform_, 0.02f,Vtf);
+			Vtf = HitObjevtMove(pHitTeaget, transform_, TANK_COLLISION_REPULSION_FORCE,Vtf);
 			Vt = XMLoadFloat3(&Vtf);
 		}
 		if (!isFlying)
@@ -104,7 +110,7 @@ void Car::Update()
 				XMVECTOR myPosVC = XMLoadFloat3(&transform_.position_);
 				XMVECTOR vecT = myPosVC - tPosVC;
 				vecT = XMVector3Normalize(vecT);
-				myPosVC = vecT * 100.0f * Timer::GetDeltaTime();
+				myPosVC = vecT * EXPLOSION_KNOCKBACK_FORCE * Timer::GetDeltaTime();
 				Vt += myPosVC;
 				isFlying = true;
 			}

@@ -39,6 +39,11 @@ void TitleScene::Initialize()
 
 	Camera::SetPosition(XMFLOAT3(0, 10, 0));
 	Camera::SetTarget(XMFLOAT3(-20, 20, 30));
+
+	counter = 0;
+	isStert = false;
+	tankSpeed = 0;
+	tanckAccer = 0;
 }
 
 void TitleScene::Update()

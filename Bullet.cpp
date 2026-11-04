@@ -14,7 +14,7 @@ namespace
 }
 
 Bullet::Bullet(GameObject* parent)
-	:GameObject(parent, "Bullet"), hModel_(-1)
+	:GameObject(parent, "Bullet"), hModel_(-1), hExplosionModel_(-1)
 {
 }
 
@@ -25,6 +25,8 @@ Bullet::~Bullet()
 void Bullet::Initialize()
 {
 	hModel_ = Model::Load("Bullet.fbx");
+	hExplosionModel_ = Model::Load("DebugCollision/SphereCollider.fbx");
+	assert(hExplosionModel_ >= 0);
 	move_ = XMFLOAT3(0, 0, 0);
 	inExplosion = false;
 	destroyTimer = 0;
@@ -75,6 +77,13 @@ void Bullet::Draw()
 {
 	Model::SetTransform(hModel_, transform_);
 	Model::Draw(hModel_);
+	if (inExplosion)
+	{
+		Transform expTransform = transform_;
+		expTransform.scale_ = XMFLOAT3(10,10,10);
+		Model::SetTransform(hExplosionModel_, expTransform);
+		Model::Draw(hExplosionModel_);
+	}
 }
 
 void Bullet::Release()

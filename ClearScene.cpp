@@ -47,7 +47,7 @@ void ClearScene::Update()
 	counter += Timer::GetDeltaTime();
 	if (counter > SCENE_CHANGE_INPUT_DELAY_FRAMES)
 	{
-		if (Input::IsKeyDown(DIK_P))
+		if (Input::IsKeyDown(DIK_SPACE))
 		{
 			SceneManager* sceneManager = (SceneManager*)(this->GetParent());
 			sceneManager->ChangeScene(SCENE_ID_TITLE);
