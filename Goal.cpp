@@ -2,7 +2,7 @@
 #include "Engine\Model.h"
 #include "Engine/Input.h"
 #include "Engine/SphereCollider.h"
-#include "Engine/SceneManager.h"
+#include "PlayScene.h"
 
 #include "Ground.h"
 #include "LandmarkMother.h"
@@ -47,8 +47,8 @@ void Goal::OnCollision(GameObject* pTarget)
 {
 	if (pTarget->GetObjectName() == "TankBody")
 	{
-		SceneManager* sceneManager = (SceneManager*)(this->GetParent()->GetParent()->GetParent());
-		sceneManager->ChangeScene(SCENE_ID_CLEAR);
+		PlayScene* playScene = (PlayScene*)(this->GetParent()->GetParent());
+		playScene->GameClear();
 	}
 	else
 	{

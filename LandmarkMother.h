@@ -22,6 +22,8 @@ public:
 	void OnCollision(GameObject* pTarget) override;
 	void MakeNextLandmark();
 	void SetAcquisitionCarNunber(int num);
+	int GetAcquisitionCarNunber(int num);
+	int GetPositionListMax();
 private:
 	int hModel_;
 	XMFLOAT3 move_;

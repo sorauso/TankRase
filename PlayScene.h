@@ -19,6 +19,8 @@ public:
 
 	//開放
 	void Release() override;
+
+	void GameClear();
 private:
 	int hModel_;
 	float counter_;

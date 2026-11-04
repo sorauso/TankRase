@@ -27,6 +27,21 @@ namespace
 	const float DECELERATION = 0.01f;
 	const float ACCELERTION_MAX = 2.0f;
 	const float BACK_ACCELERTION_MAX = 0.8f;
+	const float ROTATE_ROTATION_Y_MAX_SPEED = 1.5f;
+
+	// 砲身の仰俯角の回転速度
+	const float BARREL_ELEVATION_SPEED = 0.5f;
+
+	// 最大仰角
+	const float MAX_BARREL_ELEVATION_ANGLE = 20.0f;
+
+	// 最大俯角
+	const float MAX_BARREL_DEPRESSION_ANGLE = 10.0f;
+
+	// 砲塔の旋回速度
+	const float TURRET_ROTATION_SPEED = 0.5f;
+
+	const float floatMAX_TURRET_TRAVERSE_ANGLE = 180;
 }
 
 TankBody::TankBody(GameObject* parent)
@@ -178,31 +193,32 @@ void TankBody::SetTpsRotCamera()
 
 void TankBody::UpdateTurret()
 {
+
 	if (Input::IsKey(DIK_LEFT))
 	{
-		turretDirection.y -= 0.5;
-		if (turretDirection.y <= -180.0f)
+		turretDirection.y -= TURRET_ROTATION_SPEED;
+		if (turretDirection.y <= -floatMAX_TURRET_TRAVERSE_ANGLE)
 		{
-			turretDirection.y = -180.0f;
+			turretDirection.y = -floatMAX_TURRET_TRAVERSE_ANGLE;
 		}
 	}
 	else if (Input::IsKey(DIK_RIGHT))
 	{
-		turretDirection.y += 0.5;
-		if (turretDirection.y >= 180.0f)
+		turretDirection.y += TURRET_ROTATION_SPEED;
+		if (turretDirection.y >= floatMAX_TURRET_TRAVERSE_ANGLE)
 		{
-			turretDirection.y = 180.0f;
+			turretDirection.y = floatMAX_TURRET_TRAVERSE_ANGLE;
 		}
 	}
 	else
 	{
 		if (turretDirection.y >= 0.1f)
 		{
-			turretDirection.y -= 0.5;
+			turretDirection.y -= TURRET_ROTATION_SPEED;
 		}
 		else if (turretDirection.y <= -0.1f)
 		{
-			turretDirection.y += 0.5;
+			turretDirection.y += TURRET_ROTATION_SPEED;
 		}
 		else
 		{
@@ -211,29 +227,29 @@ void TankBody::UpdateTurret()
 	}
 	if (Input::IsKey(DIK_DOWN))
 	{
-		turretDirection.x -= 0.5;
-		if (turretDirection.x <= -25.0f)
+		turretDirection.x -= BARREL_ELEVATION_SPEED;
+		if (turretDirection.x <= -MAX_BARREL_ELEVATION_ANGLE)
 		{
-			turretDirection.x = -25.0f;
+			turretDirection.x = -MAX_BARREL_ELEVATION_ANGLE;
 		}
 	}
 	else if (Input::IsKey(DIK_UP))
 	{
-		turretDirection.x += 0.5;
-		if (turretDirection.x >= 20.0f)
+		turretDirection.x += BARREL_ELEVATION_SPEED;
+		if (turretDirection.x >= MAX_BARREL_DEPRESSION_ANGLE)
 		{
-			turretDirection.x = 20.0f;
+			turretDirection.x = MAX_BARREL_DEPRESSION_ANGLE;
 		}
 	}
 	else
 	{
 		if (turretDirection.x >= 0.1f)
 		{
-			turretDirection.x -= 0.5;
+			turretDirection.x -= BARREL_ELEVATION_SPEED;
 		}
 		else if (turretDirection.x <= -0.1f)
 		{
-			turretDirection.x += 0.5;
+			turretDirection.x += BARREL_ELEVATION_SPEED;
 		}
 		else
 		{
@@ -269,14 +285,14 @@ void TankBody::UpdateMove()
 	
 	if (Input::IsKey(DIK_A))
 	{
-		if (aRotY > -1.5f)
+		if (aRotY > -ROTATE_ROTATION_Y_MAX_SPEED)
 		{
 			aRotY -= rotSpeed;
 		}
 	}
 	else if (Input::IsKey(DIK_D))
 	{
-		if (aRotY < 1.5f)
+		if (aRotY < ROTATE_ROTATION_Y_MAX_SPEED)
 		{
 			aRotY += rotSpeed;
 		}

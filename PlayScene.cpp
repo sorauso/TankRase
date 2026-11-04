@@ -8,6 +8,12 @@
 #include "LandmarkMother.h"
 #include "UI.h"
 #include "Car.h"
+#include "Engine/GameData.h"
+
+namespace
+{
+	LandmarkMother* landmarkMother;
+}
 
 PlayScene::PlayScene(GameObject* parent)
 	:GameObject(parent, "PlayScene"),hModel_(-1),counter_(0)
@@ -21,7 +27,7 @@ void PlayScene::Initialize()
 
 	Instantiate<Ground>(this);
 	Instantiate<TankBody>(this);
-	Instantiate<LandmarkMother>(this);
+	landmarkMother = Instantiate<LandmarkMother>(this);
 	Instantiate<UI>(this);
 	for (int i = 0;i < 16;i++)
 	{
@@ -44,4 +50,18 @@ void PlayScene::Draw()
 
 void PlayScene::Release()
 {
+}
+
+void PlayScene::GameClear()
+{
+	int pointMax = landmarkMother->GetPositionListMax();
+	GameData* gameData = (GameData*)this->GetParent()->GetParent()->FindChildObject("GameData");
+
+	for (int i = 0;i < pointMax;i ++ )
+	{
+		gameData->AddLandmarkOwner(landmarkMother->GetAcquisitionCarNunber(i));
+	}
+	
+	SceneManager* sceneManager = (SceneManager*)(this->GetParent());
+	sceneManager->ChangeScene(SCENE_ID_CLEAR);
 }

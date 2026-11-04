@@ -9,6 +9,12 @@
 #include "Landmark.h"
 #include "Engine/Timer.h"
 
+namespace
+{
+	const int STAGE_SIZE = 245;
+	const float speed = 0.1f;
+}
+
 Car::Car(GameObject* parent)
     :GameObject(parent, "Car"), hModel_(-1)
 {
@@ -66,7 +72,7 @@ void Car::Initialize()
 
 void Car::Update()
 {
-	const int STAGE_SIZE = 245;
+	
 
 	XMFLOAT3 oldPostion = transform_.position_;
 
@@ -309,9 +315,7 @@ void Car::AcceleWerk()
 
 XMFLOAT3 Car::MovingVectorCreation(Transform ts, XMVECTOR vt)
 {
-	const int STAGE_SIZE = 245;
 	XMFLOAT3 output = { 0,0,0 };
-	const float speed = 0.1f;
 	//回転行列の生成
 	const float pitch = XMConvertToRadians(ts.rotate_.x);
 	const float yaw = XMConvertToRadians(ts.rotate_.y);
