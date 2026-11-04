@@ -398,9 +398,27 @@ void FbxParts::InitSkelton(FbxMesh * pMesh)
 				pose(x,y) = (float)matrix.Get(x, y);
 			}
 		}
+
+		//動かす用の変数の初期化
 		pBoneArray_[i].bindPose = XMLoadFloat4x4(&pose);
 		pBoneArray_[i].offset = XMFLOAT3(0,0,0);
 		pBoneArray_[i].rotation = XMFLOAT3(0, 0, 0);
+
+		// 親ボーンを初期化
+		pBoneArray_[i].parentIndex = -1;
+
+		// FBXノードの親を取得
+		FbxNode* parentNode = ppCluster_[i]->GetLink()->GetParent();
+
+		// 親ノードに対応するボーンを検索
+		for (int j = 0; j < numBone_; j++)
+		{
+			if (ppCluster_[j]->GetLink() == parentNode)
+			{
+				pBoneArray_[i].parentIndex = j;
+				break;
+			}
+		}
 	}
 
 	// 一時的なメモリ領域を解放する
@@ -506,28 +524,13 @@ void FbxParts::DrawSkinAnime(Transform& transform, FbxTime time)
 			}
 		}
 
-		// ボーンの回転量
-		XMFLOAT3& rot = pBoneArray_[i].rotation;
-
-		// 回転行列を生成
-		XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(
-			XMConvertToRadians(rot.x),
-			XMConvertToRadians(rot.y),
-			XMConvertToRadians(rot.z)
-		);
-
 		// オフセット時のポーズの差分を計算する
 		pBoneArray_[i].newPose = XMLoadFloat4x4(&pose);
 		//pBoneArray_[i].diffPose = XMMatrixInverse(nullptr, pBoneArray_[i].bindPose);
 		//pBoneArray_[i].diffPose *= pBoneArray_[i].newPose;
-
-		pBoneArray_[i].newPose = pBoneArray_[i].newPose * rotationMatrix;
-
-
-
 		pBoneArray_[i].diffPose = XMMatrixInverse(nullptr, pBoneArray_[i].bindPose) * pBoneArray_[i].newPose;
 
-		int test = 0;
+		UpdateBonePose(i);
 	}
 
 	// 各ボーンに対応した頂点の変形制御
@@ -609,6 +612,54 @@ void FbxParts::DrawMeshAnime(Transform& transform, FbxTime time, FbxScene * scen
 	//}
 
 	Draw(transform);
+}
+
+void FbxParts::UpdateBonePose(int index)
+{
+	Bone& bone = pBoneArray_[index];
+
+	// 親が存在する場合
+	if (bone.parentIndex >= 0)
+	{
+		UpdateBonePose(bone.parentIndex);
+	}
+
+	// 初期姿勢からローカル行列を計算
+	XMMATRIX localMatrix = bone.bindPose;
+
+	if (bone.parentIndex >= 0)
+	{
+		localMatrix =
+			bone.bindPose *
+			XMMatrixInverse(
+				nullptr,
+				pBoneArray_[bone.parentIndex].bindPose
+			);
+	}
+
+	// 指定された回転量を反映
+	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(
+		XMConvertToRadians(bone.rotation.x),
+		XMConvertToRadians(bone.rotation.y),
+		XMConvertToRadians(bone.rotation.z)
+	);
+
+	localMatrix = rotationMatrix * localMatrix;
+
+	// 親の更新済み姿勢を継承
+	if (bone.parentIndex >= 0)
+	{
+		bone.newPose =
+			localMatrix * pBoneArray_[bone.parentIndex].newPose;
+	}
+	else
+	{
+		bone.newPose = localMatrix;
+	}
+
+	// 初期姿勢との差分を求める
+	bone.diffPose =
+		XMMatrixInverse(nullptr, bone.bindPose) * bone.newPose;
 }
 
 bool FbxParts::GetBonePosition(std::string boneName, XMFLOAT3 * position)

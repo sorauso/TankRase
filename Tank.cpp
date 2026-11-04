@@ -41,6 +41,7 @@ void TankBody::Initialize()
 	verticalVelocity = 0.0f;
 	verticalVelocityMax = 10.0f;
 	transform_.scale_ = XMFLOAT3(0.02, 0.02, 0.02);
+	turretDirection = XMFLOAT3(0,0,0);
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
@@ -140,11 +141,71 @@ void TankBody::Update()
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 	RotationTank();
 
-	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(0,0, 0)));
-	assert(Model::RotationBonePosition(hModel_, "Top", XMFLOAT3(0, 0, 0)));
-	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0, test, 0)));
-
-	test += 0.1;
+	if (Input::IsKey(DIK_LEFT))
+	{
+		turretDirection.y -= 0.5;
+		if (turretDirection.y <= -180.0f)
+		{
+			turretDirection.y = -180.0f;
+		}
+	}
+	else if (Input::IsKey(DIK_RIGHT))
+	{
+		turretDirection.y += 0.5;
+		if (turretDirection.y >= 180.0f)
+		{
+			turretDirection.y = 180.0f;
+		}
+	}
+	else
+	{
+		if (turretDirection.y >= 0.1f)
+		{
+			turretDirection.y -= 0.5;
+		}
+		else if (turretDirection.y <= -0.1f)
+		{
+			turretDirection.y += 0.5;
+		}
+		else
+		{
+			turretDirection.y = 0.0;
+		}
+	}
+	if (Input::IsKey(DIK_DOWN))
+	{
+		turretDirection.x -= 0.5;
+		if (turretDirection.x <= -30.0f)
+		{
+			turretDirection.x = -30.0f;
+		}
+	}
+	else if (Input::IsKey(DIK_UP))
+	{
+		turretDirection.x += 0.5;
+		if (turretDirection.x >= 30.0f)
+		{
+			turretDirection.x = 30.0f;
+		}
+	}
+	else
+	{
+		if (turretDirection.x >= 0.1f)
+		{
+			turretDirection.x -= 0.5;
+		}
+		else if (turretDirection.x <= -0.1f)
+		{
+			turretDirection.x += 0.5;
+		}
+		else
+		{
+			turretDirection.x = 0.0;
+		}
+	}
+	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(turretDirection.x, 0, 0)));
+	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0, turretDirection.y, 0)));
+	//assert(Model::RotationBonePosition(hModel_, "Top", XMFLOAT3(0, 0, 0)));
 
 	SetTpsRotCamera();
 
@@ -152,7 +213,7 @@ void TankBody::Update()
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
 		const float BULLET_SPEED = 0.1f;
-		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
+		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Head");
 		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Under");
 		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
 		XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
@@ -286,104 +347,4 @@ XMFLOAT3 TankBody::MovingVectorCreation(Transform ts, XMVECTOR vt)
 		output.z = ts.position_.z;
 	}
 	return output;
-}
-
-TankHead::TankHead(GameObject* parent)
-	:GameObject(parent, "TankHead"), hModel_(-1)
-{
-}
-
-TankHead::~TankHead()
-{
-}
-
-void TankHead::Initialize()
-{
-	hModel_ = Model::Load("TankHead.fbx");
-}
-
-void TankHead::Update()
-{
-	if (Input::IsKey(DIK_LEFT))
-	{
-		transform_.rotate_.y -= 0.5;
-	}
-	else if (Input::IsKey(DIK_RIGHT))
-	{
-		transform_.rotate_.y += 0.5;
-	}
-	else
-	{
-		if (transform_.rotate_.y >= 0.1f)
-		{
-			transform_.rotate_.y -= 0.5;
-		}
-		else if (transform_.rotate_.y <= -0.1f)
-		{
-			transform_.rotate_.y += 0.5;
-		}
-		else
-		{
-			transform_.rotate_.y = 0.0;
-		}
-	}
-	if (Input::IsKey(DIK_DOWN))
-	{
-		CanomPith -= 0.01;
-		if (CanomPith < -0.5)
-		{
-			CanomPith = -0.5;
-		}
-	}
-	else if (Input::IsKey(DIK_UP))
-	{
-		CanomPith += 0.01;
-		if (CanomPith > 0.5)
-		{
-			CanomPith = 0.5;
-		}
-	}
-	else
-	{
-		if (CanomPith >= 0.01f)
-		{
-			CanomPith -= 0.01;
-		}
-		else if (CanomPith <= -0.01f)
-		{
-			CanomPith += 0.01;
-		}
-		else
-		{
-			CanomPith = 0.0;
-		}
-	}
-	if (Input::IsKeyDown(DIK_SPACE))
-	{
-		return;
-		const float BULLET_SPEED = 0.6f;
-		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Top");
-		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Root");
-		cannonRoot.y += CanomPith;
-		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
-		XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
-		XMVECTOR vMove = vCannonTpo - vCannonRoot;
-		vMove = XMVector3Normalize(vMove);
-		vMove = XMVectorScale(vMove, BULLET_SPEED);
-		XMFLOAT3 fMove;
-		XMStoreFloat3(&fMove, vMove);
-		Bullet* pBullet = Instantiate<Bullet>(this->GetParent()->GetParent());
-		pBullet->SetMoveVector(fMove);
-		pBullet->SetPosition(cannonTpo);
-	}
-}
-
-void TankHead::Draw()
-{
-	Model::SetTransform(hModel_, transform_);
-	//Model::Draw(hModel_);
-}
-
-void TankHead::Release()
-{
 }

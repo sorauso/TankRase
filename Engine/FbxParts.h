@@ -60,6 +60,7 @@ class FbxParts
 
 		XMFLOAT3 offset;		 //ボーンを動かすときの変化量
 		XMFLOAT3 rotation;		 //ボーンを回転させるときの変化量
+		int parentIndex;		 //親のボーン
 	};
 
 	// ウェイト構造体（ボーンと頂点の関連付け）
@@ -140,6 +141,10 @@ public:
 	//引数：time		フレーム情報（１アニメーション内の今どこか）
 	//引数：scene		Fbxファイルから読み込んだシーン情報
 	void DrawMeshAnime(Transform& transform, FbxTime time, FbxScene* scene);
+
+	// ボーンの親子関係を考慮して姿勢を更新する
+// 引数：index 更新するボーンのインデックス
+	void UpdateBonePose(int index);
 
 	//任意のボーンの位置を取得
 	//引数：boneName	取得したいボーンの位置
