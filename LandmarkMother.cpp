@@ -1,6 +1,7 @@
 #include "LandmarkMother.h"
 #include "Landmark.h"
 #include "Goal.h"
+#include "Engine/GameData.h"
 namespace
 {
 	const int positionListMax = 15;
@@ -25,9 +26,6 @@ void LandmarkMother::Initialize()
 
 void LandmarkMother::Update()
 {
-	//char buf[256];
-	//sprintf_s(buf, "%d\n", acquisitionCarS[counter_-1]);
-	//OutputDebugStringA(buf);
 }
 
 void LandmarkMother::Draw()
@@ -57,9 +55,17 @@ void LandmarkMother::MakeNextLandmark()
 	Landmark* lm = Instantiate<Landmark>(this);
 	lm->SetPosition(XMFLOAT3(positionX[counter_], 0, positionY[counter_]));
 	counter_++;
+
+	char buf[256];
+	sprintf_s(buf, "%d\n", acquisitionCarS[counter_ - 1]);
+	OutputDebugStringA(buf);
+
+	
 }
 
-void LandmarkMother::GetAcquisitionCarNunber(int num)
+void LandmarkMother::SetAcquisitionCarNunber(int num)
 {
 	acquisitionCarS[counter_] = num;
+	GameData* gameData = (GameData*)FindChildObject("GameData");
+	gameData->AddLandmarkOwner(acquisitionCarS[counter_]);
 }

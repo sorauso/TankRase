@@ -17,6 +17,16 @@ namespace
 	float CanomPith = 0;
 
 	float test = 0;
+
+	const float BULLET_SPEED = 1.0f;
+	const float speed = 0.1f;
+	const int STAGE_SIZE = 245;
+	const float rotSpeed = 0.05f;
+
+	const float ACCELERATION = 0.01f;
+	const float DECELERATION = 0.01f;
+	const float ACCELERTION_MAX = 2.0f;
+	const float BACK_ACCELERTION_MAX = 0.8f;
 }
 
 TankBody::TankBody(GameObject* parent)
@@ -59,172 +69,18 @@ void TankBody::Initialize()
 
 void TankBody::Update()
 {
-	/*char buf[256];
-	sprintf_s(buf, "pos:%.0f:%.0f\n", transform_.position_.x, transform_.position_.z);
-	OutputDebugStringA(buf);*/
+	UpdateMove();
 
-	const float rotSpeed = 0.05f;
-	if (Input::IsKey(DIK_A))
-	{
-		if (aRotY > -1.5f)
-		{
-			aRotY -= rotSpeed;
-		}
-	}
-	else if (Input::IsKey(DIK_D))
-	{
-		if (aRotY < 1.5f)
-		{
-			aRotY += rotSpeed;
-		}
-	}
-	else
-	{
-		if (aRotY > 0.01f)
-		{
-			aRotY -= rotSpeed;
-		}
-		else if (aRotY < -0.01f)
-		{
-			aRotY += rotSpeed;
-		}
-		else
-		{
-			aRotY = 0.0f;
-		}
-	}
-	transform_.rotate_.y += aRotY;
-
-	//Debug::Log("Yangle = ");
-	//Debug::Log(transform_.rotate_.y,true);
-
-	const float ACCELERATION = 0.01f;
-	const float DECELERATION = 0.01f;
-	const float ACCELERTION_MAX = 2.0f;
-	const float BACK_ACCELERTION_MAX = 0.8f;
-	if (Input::IsKey(DIK_W))
-	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z < ACCELERTION_MAX)
-		{
-			Vt += XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
-		}
-	}
-	else if (Input::IsKey(DIK_S))
-	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z > -BACK_ACCELERTION_MAX)
-		{
-			Vt -= XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
-		}
-	}
-	else
-	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
-		if (Vtf.z > 0.01f)
-		{
-			Vt -= XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
-		}
-		else if (Vtf.z < -0.01f)
-		{
-			Vt += XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
-		}
-		else
-		{
-			Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-		}
-	}
-
-	transform_.position_ = MovingVectorCreation(transform_, Vt);
 	RotationTank();
 
-	if (Input::IsKey(DIK_LEFT))
-	{
-		turretDirection.y -= 0.5;
-		if (turretDirection.y <= -180.0f)
-		{
-			turretDirection.y = -180.0f;
-		}
-	}
-	else if (Input::IsKey(DIK_RIGHT))
-	{
-		turretDirection.y += 0.5;
-		if (turretDirection.y >= 180.0f)
-		{
-			turretDirection.y = 180.0f;
-		}
-	}
-	else
-	{
-		if (turretDirection.y >= 0.1f)
-		{
-			turretDirection.y -= 0.5;
-		}
-		else if (turretDirection.y <= -0.1f)
-		{
-			turretDirection.y += 0.5;
-		}
-		else
-		{
-			turretDirection.y = 0.0;
-		}
-	}
-	if (Input::IsKey(DIK_DOWN))
-	{
-		turretDirection.x -= 0.5;
-		if (turretDirection.x <= -30.0f)
-		{
-			turretDirection.x = -30.0f;
-		}
-	}
-	else if (Input::IsKey(DIK_UP))
-	{
-		turretDirection.x += 0.5;
-		if (turretDirection.x >= 30.0f)
-		{
-			turretDirection.x = 30.0f;
-		}
-	}
-	else
-	{
-		if (turretDirection.x >= 0.1f)
-		{
-			turretDirection.x -= 0.5;
-		}
-		else if (turretDirection.x <= -0.1f)
-		{
-			turretDirection.x += 0.5;
-		}
-		else
-		{
-			turretDirection.x = 0.0;
-		}
-	}
-	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(turretDirection.x, 0, 0)));
-	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0, turretDirection.y, 0)));
-	//assert(Model::RotationBonePosition(hModel_, "Top", XMFLOAT3(0, 0, 0)));
+	UpdateTurret();
 
 	SetTpsRotCamera();
 
 
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
-		const float BULLET_SPEED = 0.1f;
-		XMFLOAT3 cannonTpo = Model::GetBonePosition(hModel_, "Head");
-		XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Under");
-		XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTpo);
-		XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
-		XMVECTOR vMove = vCannonRoot - vCannonTpo;
-		vMove = XMVector3Normalize(vMove);
-		vMove = XMVectorScale(vMove, BULLET_SPEED);
-		XMFLOAT3 fMove;
-		XMStoreFloat3(&fMove, vMove);
-		Bullet* pBullet = Instantiate<Bullet>(this->GetParent());
-		pBullet->SetMoveVector(fMove);
-		pBullet->SetPosition(cannonRoot);
+		Fire();
 	}
 }
 
@@ -320,11 +176,170 @@ void TankBody::SetTpsRotCamera()
 	Camera::SetTarget(teagetPos);
 }
 
+void TankBody::UpdateTurret()
+{
+	if (Input::IsKey(DIK_LEFT))
+	{
+		turretDirection.y -= 0.5;
+		if (turretDirection.y <= -180.0f)
+		{
+			turretDirection.y = -180.0f;
+		}
+	}
+	else if (Input::IsKey(DIK_RIGHT))
+	{
+		turretDirection.y += 0.5;
+		if (turretDirection.y >= 180.0f)
+		{
+			turretDirection.y = 180.0f;
+		}
+	}
+	else
+	{
+		if (turretDirection.y >= 0.1f)
+		{
+			turretDirection.y -= 0.5;
+		}
+		else if (turretDirection.y <= -0.1f)
+		{
+			turretDirection.y += 0.5;
+		}
+		else
+		{
+			turretDirection.y = 0.0;
+		}
+	}
+	if (Input::IsKey(DIK_DOWN))
+	{
+		turretDirection.x -= 0.5;
+		if (turretDirection.x <= -25.0f)
+		{
+			turretDirection.x = -25.0f;
+		}
+	}
+	else if (Input::IsKey(DIK_UP))
+	{
+		turretDirection.x += 0.5;
+		if (turretDirection.x >= 20.0f)
+		{
+			turretDirection.x = 20.0f;
+		}
+	}
+	else
+	{
+		if (turretDirection.x >= 0.1f)
+		{
+			turretDirection.x -= 0.5;
+		}
+		else if (turretDirection.x <= -0.1f)
+		{
+			turretDirection.x += 0.5;
+		}
+		else
+		{
+			turretDirection.x = 0.0;
+		}
+	}
+	assert(Model::RotationBonePosition(hModel_, "Under", XMFLOAT3(turretDirection.x, 0, 0)));
+	assert(Model::RotationBonePosition(hModel_, "Head", XMFLOAT3(0, turretDirection.y, 0)));
+}
+
+void TankBody::Fire()
+{
+	XMFLOAT3 position = transform_.position_;
+	XMFLOAT3 cannonTip = Model::GetBonePosition(hModel_, "Tip");
+	XMFLOAT3 cannonTop = Model::GetBonePosition(hModel_, "Top");
+	XMFLOAT3 cannonRoot = Model::GetBonePosition(hModel_, "Under");
+	XMVECTOR vPosition = XMLoadFloat3(&position);
+	XMVECTOR vCannonTip = XMLoadFloat3(&cannonTip);
+	XMVECTOR vCannonTpo = XMLoadFloat3(&cannonTop);
+	XMVECTOR vCannonRoot = XMLoadFloat3(&cannonRoot);
+	XMVECTOR vMove = vCannonTpo - vCannonRoot;
+	vMove = XMVector3Normalize(vMove);
+	vMove = XMVectorScale(vMove, BULLET_SPEED);
+	XMFLOAT3 fMove;
+	XMStoreFloat3(&fMove, vMove);
+	Bullet* pBullet = Instantiate<Bullet>(this->GetParent());
+	pBullet->SetMoveVector(fMove);
+	pBullet->SetPosition(cannonTip);
+}
+
+void TankBody::UpdateMove()
+{
+	
+	if (Input::IsKey(DIK_A))
+	{
+		if (aRotY > -1.5f)
+		{
+			aRotY -= rotSpeed;
+		}
+	}
+	else if (Input::IsKey(DIK_D))
+	{
+		if (aRotY < 1.5f)
+		{
+			aRotY += rotSpeed;
+		}
+	}
+	else
+	{
+		if (aRotY > 0.01f)
+		{
+			aRotY -= rotSpeed;
+		}
+		else if (aRotY < -0.01f)
+		{
+			aRotY += rotSpeed;
+		}
+		else
+		{
+			aRotY = 0.0f;
+		}
+	}
+	transform_.rotate_.y += aRotY;
+
+	if (Input::IsKey(DIK_W))
+	{
+		XMFLOAT3 Vtf;
+		XMStoreFloat3(&Vtf, Vt);
+		if (Vtf.z < ACCELERTION_MAX)
+		{
+			Vt += XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
+		}
+	}
+	else if (Input::IsKey(DIK_S))
+	{
+		XMFLOAT3 Vtf;
+		XMStoreFloat3(&Vtf, Vt);
+		if (Vtf.z > -BACK_ACCELERTION_MAX)
+		{
+			Vt -= XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
+		}
+	}
+	else
+	{
+		XMFLOAT3 Vtf;
+		XMStoreFloat3(&Vtf, Vt);
+		if (Vtf.z > 0.01f)
+		{
+			Vt -= XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
+		}
+		else if (Vtf.z < -0.01f)
+		{
+			Vt += XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
+		}
+		else
+		{
+			Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+		}
+	}
+
+	transform_.position_ = MovingVectorCreation(transform_, Vt);
+}
+
 XMFLOAT3 TankBody::MovingVectorCreation(Transform ts, XMVECTOR vt)
 {
-	const int STAGE_SIZE = 245;
 	XMFLOAT3 output = { 0,0,0 };
-	const float speed = 0.1f;
 	//回転行列の生成
 	const float pitch = XMConvertToRadians(ts.rotate_.x);
 	const float yaw = XMConvertToRadians(ts.rotate_.y);

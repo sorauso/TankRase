@@ -29,6 +29,6 @@ private:
 	XMFLOAT3 move_;
 	bool inExplosion;
 	float destroyTimer;
-	unsigned int groundFollowFrameCount;
+	float explosionEnableFrameTimer;
 };
 

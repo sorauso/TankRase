@@ -668,17 +668,14 @@ bool FbxParts::GetBonePosition(std::string boneName, XMFLOAT3 * position)
 	{
 		if (boneName == ppCluster_[i]->GetLink()->GetName())
 		{
-			FbxAMatrix  matrix;
-			ppCluster_[i]->GetTransformLinkMatrix(matrix);
 
-			position->x = (float)matrix[3][0];
-			position->y = (float)matrix[3][1];
-			position->z = (float)matrix[3][2];
+			XMStoreFloat3(position, pBoneArray_[i].newPose.r[3]);
 
 			return true;
 		}
 
 	}
+
 
 	return false;
 }

@@ -30,7 +30,9 @@ private:
 private:
 	void RotationTank();
 	void SetTpsRotCamera();
-
+	void UpdateTurret();  // 砲塔の動きを更新
+	void Fire();    // 射撃処理を更新
+	void UpdateMove();    // 移動処理を更新
 	XMFLOAT3 MovingVectorCreation(Transform ts, XMVECTOR vt);
 };
 

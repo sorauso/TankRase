@@ -107,6 +107,12 @@
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Car.cpp" />
     <ClCompile Include="Goal.cpp" />
+    <ClCompile Include="Engine\Timer.cpp">
+      <Filter>01Engine\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\GameData.cpp">
+      <Filter>01Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\BoxCollider.h">
@@ -194,6 +200,9 @@
     <ClInclude Include="Car.h" />
     <ClInclude Include="Goal.h">
       <Filter>リソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Timer.h">
+      <Filter>01Engine\GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

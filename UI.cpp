@@ -5,6 +5,12 @@
 
 #include "Tank.h"
 
+namespace
+{
+	const int MOVE_LIMIT = 40;
+	const float POSITION_NUM = 0.02f;
+}
+
 UI::UI(GameObject* parent)
 	:GameObject(parent, "UI"), hImage_(-1)
 {
@@ -22,8 +28,6 @@ void UI::Initialize()
 
 void UI::Update()
 {
-	const int MOVE_LIMIT = 40;
-	const float POSITION_NUM = 0.02f;
 	TankBody* pTk = (TankBody*)FindObject("TankBody");
 	float dir = pTk->GetLandmarkdirection();
 	if (dir > MOVE_LIMIT) { dir = MOVE_LIMIT; }

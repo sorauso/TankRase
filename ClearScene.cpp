@@ -2,9 +2,11 @@
 #include "Engine/Image.h"
 #include "Engine/Input.h"
 #include "Engine/SceneManager.h"
+#include "Engine/Timer.h"
 namespace
 {
-	int counter = 0;
+	const float SCENE_CHANGE_INPUT_DELAY_FRAMES = 0.5f;
+	float counter = 0;
 }
 
 ClearScene::ClearScene(GameObject* parent)
@@ -21,17 +23,14 @@ void ClearScene::Initialize()
 
 void ClearScene::Update()
 {
-	if (counter > 30)
+	counter += Timer::GetDeltaTime();
+	if (counter > SCENE_CHANGE_INPUT_DELAY_FRAMES)
 	{
 		if (Input::IsKeyDown(DIK_P))
 		{
 			SceneManager* sceneManager = (SceneManager*)(this->GetParent());
 			sceneManager->ChangeScene(SCENE_ID_TITLE);
 		}
-	}
-	else
-	{
-		counter++;
 	}
 }
 

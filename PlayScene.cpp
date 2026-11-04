@@ -9,11 +9,6 @@
 #include "UI.h"
 #include "Car.h"
 
-namespace
-{
-	int counter = 0;;
-}
-
 PlayScene::PlayScene(GameObject* parent)
 	:GameObject(parent, "PlayScene"),hModel_(-1),counter_(0)
 {
@@ -37,19 +32,6 @@ void PlayScene::Initialize()
 
 void PlayScene::Update()
 {
-	return;
-	if (counter > 30)
-	{
-		if (Input::IsKeyDown(DIK_P))
-		{
-			SceneManager* sceneManager = (SceneManager*)(this->GetParent());
-			sceneManager->ChangeScene(SCENE_ID_CLEAR);
-		}
-	}
-	else
-	{
-		counter++;
-	}
 }
 
 void PlayScene::Draw()

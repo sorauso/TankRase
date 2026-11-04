@@ -11,6 +11,11 @@ namespace
 	float counter = 0;
 	bool isStert = false;
 
+	// シーン切り替えアニメーションの再生を許可するまでの時間
+	constexpr int SCENE_CHANGE_ANIMATION_DELAY_FRAMES = 0.5f;
+
+	// アニメーション再生開始から実際にシーンを切り替えるまでの時間
+	constexpr int SCENE_CHANGE_DELAY_FRAMES = 1.5f;
 	const float TANK_ACCEL = 0.5f;
 	float tankSpeed = 0;
 	float tanckAccer = 0;
@@ -40,7 +45,7 @@ void TitleScene::Update()
 {
 	counter+= Timer::GetDeltaTime();
 
-	if (counter > 0.5f)
+	if (counter > SCENE_CHANGE_ANIMATION_DELAY_FRAMES)
 	{
 		if (Input::IsKeyDown(DIK_SPACE))
 		{
@@ -58,7 +63,7 @@ void TitleScene::Update()
 	tankSpeed += tanckAccer * Timer::GetDeltaTime();
 	tanckAccer += TANK_ACCEL;
 
-	if (counter > 1.5f)
+	if (counter > SCENE_CHANGE_DELAY_FRAMES)
 	{
 		SceneManager* sceneManager = (SceneManager*)(this->GetParent());
 		sceneManager->ChangeScene(SCENE_ID_PLAY);

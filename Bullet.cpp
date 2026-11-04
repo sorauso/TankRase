@@ -5,6 +5,14 @@
 #include "Ground.h"
 #include "Engine/Timer.h"
 
+namespace
+{
+	const float DEREAT_POSITION = 700.0f;
+	const float DESTROI_TIME = 0.5f;
+	const float EXPLOSION_ENABLE_DELAY_FRAMES = 0.01f;
+	const float GRAVITY = 0.005f;
+}
+
 Bullet::Bullet(GameObject* parent)
 	:GameObject(parent, "Bullet"), hModel_(-1)
 {
@@ -20,7 +28,7 @@ void Bullet::Initialize()
 	move_ = XMFLOAT3(0, 0, 0);
 	inExplosion = false;
 	destroyTimer = 0;
-	groundFollowFrameCount = 0;
+	explosionEnableFrameTimer = 0;
 }
 
 void Bullet::Update()
@@ -28,16 +36,15 @@ void Bullet::Update()
 
 	XMVECTOR vPos = XMLoadFloat3(&transform_.position_);
 	XMVECTOR vMove = XMLoadFloat3(&move_);
-	vMove -= XMVECTOR{ 0,0.005f,0,0 };
+	vMove -= XMVECTOR{ 0,GRAVITY,0,0 };
 	vPos = vPos + vMove;
 	XMStoreFloat3(&move_, vMove);
 	XMStoreFloat3(&transform_.position_, vPos);
-	const float DereatPosition = 700.0f;
-	if (transform_.position_.z > DereatPosition ||
-		transform_.position_.z < -DereatPosition ||
-		transform_.position_.x > DereatPosition ||
-		transform_.position_.x < -DereatPosition ||
-		transform_.position_.y < -DereatPosition)
+	if (transform_.position_.z > DEREAT_POSITION ||
+		transform_.position_.z < -DEREAT_POSITION ||
+		transform_.position_.x > DEREAT_POSITION ||
+		transform_.position_.x < -DEREAT_POSITION ||
+		transform_.position_.y < -DEREAT_POSITION)
 	{
 		KillMe();
 	}
@@ -45,13 +52,13 @@ void Bullet::Update()
 	if (inExplosion)
 	{
 		destroyTimer += Timer::GetDeltaTime();
-		if (destroyTimer > 0.5f)
+		if (destroyTimer > DESTROI_TIME)
 		{
 			KillMe();
 		}
 		return;
 	}
-	if (groundFollowFrameCount >= 2)
+	if (explosionEnableFrameTimer >= EXPLOSION_ENABLE_DELAY_FRAMES)
 	{
 		if (OnProjectileImpact())
 		{
@@ -59,9 +66,9 @@ void Bullet::Update()
 			AddCollider(collision);
 			inExplosion = true;
 		}
-		groundFollowFrameCount = 0;
+		explosionEnableFrameTimer = 0;
 	}
-	groundFollowFrameCount++;
+	explosionEnableFrameTimer += Timer::GetDeltaTime();
 }
 
 void Bullet::Draw()
