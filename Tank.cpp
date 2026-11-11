@@ -28,6 +28,7 @@ namespace
 	const float ACCELERTION_MAX = 2.0f;
 	const float BACK_ACCELERTION_MAX = 0.8f;
 	const float ROTATE_ROTATION_Y_MAX_SPEED = 1.5f;
+	const float CAMERA_PITH_ANGLE = 0.8f;
 
 	// 砲身の仰俯角の回転速度
 	const float BARREL_ELEVATION_SPEED = 0.5f;
@@ -97,6 +98,7 @@ void TankBody::Update()
 	{
 		Fire();
 	}
+
 }
 
 void TankBody::Draw()
@@ -146,12 +148,32 @@ void TankBody::RotationTank()
 	data1.start = startPos;           //レイの発射位置
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
+
 	XMFLOAT3 n = data1.normalVector;
-	float rotY = transform_.rotate_.y * (XM_PI / 180);
-	n.x = n.x * cosf(rotY);
-	n.z = n.z * cosf(rotY);
-	GroundRotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
-	GroundRotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
+
+	// 戦車のY軸回転（ラジアン）
+	float rotY = XMConvertToRadians(transform_.rotate_.y);
+
+	// 地面の法線
+	XMVECTOR normal = XMVector3Normalize(XMLoadFloat3(&n));
+
+	// 戦車の旋回を打ち消す回転行列
+	XMMATRIX invRotY = XMMatrixRotationY(-rotY);
+
+	// 法線を戦車のローカル座標系に変換
+	XMVECTOR localNormal = XMVector3TransformNormal(normal, invRotY);
+
+	XMFLOAT3 localN;
+	XMStoreFloat3(&localN, localNormal);
+
+	// ローカル座標の傾斜角度を求める
+	GroundRotate_.x = XMConvertToDegrees(
+		atan2f(localN.z, localN.y)
+	);
+
+	GroundRotate_.z = XMConvertToDegrees(
+		atan2f(-localN.x, localN.y)
+	);
 
 	transform_.rotate_.x = transform_.rotate_.x + (GroundRotate_.x - transform_.rotate_.x) * Timer::GetDeltaTime();
 	transform_.rotate_.z = transform_.rotate_.z + (GroundRotate_.z - transform_.rotate_.z) * Timer::GetDeltaTime();
@@ -173,11 +195,18 @@ void TankBody::RotationTank()
 			verticalVelocity = verticalVelocityMax;
 		}
 	}
+
+	char buf[256];
+	sprintf_s(buf, "%.2lf : %.2lf\n", n.z, n.x);
+	OutputDebugStringA(buf);
 }
 
 void TankBody::SetTpsRotCamera()
 {
-	XMMATRIX matRot = XMMatrixRotationY(XMConvertToRadians(transform_.rotate_.y));
+	const float pitch = XMConvertToRadians(turretDirection.x * CAMERA_PITH_ANGLE);
+	const float yaw = XMConvertToRadians(transform_.rotate_.y + turretDirection.y);
+	const float roll = XMConvertToRadians(turretDirection.z);
+	XMMATRIX matRot = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
 	XMVECTOR vPos = XMLoadFloat3(&transform_.position_);
 	XMFLOAT3 camPos;
 	XMFLOAT3 teagetPos;
@@ -214,11 +243,11 @@ void TankBody::UpdateTurret()
 	{
 		if (turretDirection.y >= 0.1f)
 		{
-			turretDirection.y -= TURRET_ROTATION_SPEED;
+			//turretDirection.y -= TURRET_ROTATION_SPEED;
 		}
 		else if (turretDirection.y <= -0.1f)
 		{
-			turretDirection.y += TURRET_ROTATION_SPEED;
+			//turretDirection.y += TURRET_ROTATION_SPEED;
 		}
 		else
 		{
