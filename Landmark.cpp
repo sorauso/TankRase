@@ -27,6 +27,8 @@ void Landmark::Initialize()
 	transform_.scale_ = XMFLOAT3(10,10,10);
 
 	Model::SetAnimFrame(hModel_, 0, 100, 1);
+
+	
 }
 
 void Landmark::Update()
@@ -86,11 +88,26 @@ void Landmark::RotationGroud()
 	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
 	Model::RayCast(hGroundModel, &data1); //レイを発射
 	XMFLOAT3 n = data1.normalVector;
-	float rotY = transform_.rotate_.y * (XM_PI / 180);
-	n.x = n.x * cosf(rotY);
-	n.z = n.z * cosf(rotY);
-	transform_.rotate_.x = atan2f(n.z, n.y) * (180 / XM_PI);
-	transform_.rotate_.z = atan2f(-n.x, n.y) * (180 / XM_PI);
+
+	// 戦車のY軸回転（ラジアン）
+	float rotY = XMConvertToRadians(transform_.rotate_.y);
+
+	// 地面の法線
+	XMVECTOR normal = XMVector3Normalize(XMLoadFloat3(&n));
+
+	// 戦車の旋回を打ち消す回転行列
+	XMMATRIX invRotY = XMMatrixRotationY(-rotY);
+
+	// 法線を戦車のローカル座標系に変換
+	XMVECTOR localNormal = XMVector3TransformNormal(normal, invRotY);
+
+	XMFLOAT3 localN;
+	XMStoreFloat3(&localN, localNormal);
+
+	// ローカル座標の傾斜角度を求める
+	transform_.rotate_.x = XMConvertToDegrees(atan2f(localN.z, localN.y));
+
+	transform_.rotate_.z = XMConvertToDegrees(atan2f(-localN.x, localN.y));
 
 	transform_.position_.y = 0 - data1.dist;
 }

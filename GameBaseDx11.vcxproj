@@ -165,11 +165,13 @@
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="Landmark.cpp" />
     <ClCompile Include="LandmarkMother.cpp" />
+    <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="Tank.cpp" />
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="UI.cpp" />
+    <ClCompile Include="Vehicle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bullet.h" />
@@ -204,11 +206,13 @@
     <ClInclude Include="Landmark.h" />
     <ClInclude Include="LandmarkMother.h" />
     <ClInclude Include="Math3D.h" />
+    <ClInclude Include="Obstacle.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Tank.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="UI.h" />
+    <ClInclude Include="Vehicle.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shader\BillBoard.hlsl">

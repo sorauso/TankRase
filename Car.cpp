@@ -11,8 +11,6 @@
 
 namespace
 {
-	const int STAGE_SIZE = 245;
-	const float speed = 0.1f;
 	const float EXPLOSION_KNOCKBACK_FORCE = 150;
 	// 車との衝突時の反発力
 	constexpr float CAR_COLLISION_REPULSION_FORCE = 0.02f;
@@ -22,7 +20,7 @@ namespace
 }
 
 Car::Car(GameObject* parent)
-    :GameObject(parent, "Car"), hModel_(-1)
+    :Vehicle(parent, "Car"), hModel_(-1)
 {
 }
 
@@ -95,10 +93,7 @@ void Car::Update()
 		}
 		if (isHitTank)
 		{
-			XMFLOAT3 Vtf;
-			XMStoreFloat3(&Vtf, Vt);
-			Vtf = HitObjevtMove(pHitTeaget, transform_, TANK_COLLISION_REPULSION_FORCE,Vtf);
-			Vt = XMLoadFloat3(&Vtf);
+			
 		}
 		if (!isFlying)
 		{
@@ -118,7 +113,7 @@ void Car::Update()
 	}
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 
-	RotationCar();
+	RotationBody(transform_);
 	isHitCar = false;
 	isHitTank = false;
 	isHitExplosion = false;
@@ -143,32 +138,6 @@ void Car::Release()
 {
 }
 
-float Car::GetLandmarkdirection()
-{
-	float ret = 0;
-	Landmark* pLDK = (Landmark*)FindObject("LandMark");
-	if (pLDK == nullptr)
-	{
-		return ret;
-	}
-	XMFLOAT3 ldPosF3 = pLDK->GetPosition();
-	ldPosF3.y = 0;
-	XMVECTOR ldPosVC = XMLoadFloat3(&ldPosF3);
-	XMFLOAT3 tankPosF3 = this->transform_.position_;
-	tankPosF3.y = 0;
-	XMVECTOR tankPosVC = XMLoadFloat3(&tankPosF3);
-	XMVECTOR vecT = ldPosVC - tankPosVC;
-	float yaw = XMConvertToRadians(this->transform_.rotate_.y);
-	XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
-	XMVECTOR rotVC = XMLoadFloat3(&rotF3);
-	rotVC = XMVector3Normalize(rotVC);
-	vecT = XMVector3Normalize(vecT);
-	float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
-	float front = XMVectorGetX(XMVector3Dot(rotVC, vecT));
-	ret = XMConvertToDegrees(atan2f(side, front));
-	return ret;
-}
-
 void Car::SetCarNunber(int num)
 {
 	CarNunber = num;
@@ -178,105 +147,17 @@ void Car::OnCollision(GameObject* pTarget)
 {
 	if (pTarget->GetObjectName() == "Car")
 	{
-		pHitTeaget = pTarget;
-		isHitCar = true;
+		CalculateSlideVector(pTarget, transform_, Vt);
 	}
 	if (pTarget->GetObjectName() == "TankBody")
 	{
-		pHitTeaget = pTarget;
-		isHitTank = true;
+		CalculateSlideVector(pTarget, transform_, Vt);
 	}
 	if (pTarget->GetObjectName() == "Bullet")
 	{
 		pHitTeaget = pTarget;
 		isHitExplosion = true;
 	}
-}
-
-void Car::RotationCar()
-{
-	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
-	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
-	RayCastData data1;
-	XMFLOAT3 startPos;
-	startPos = transform_.position_;
-	startPos.y = 0;
-	data1.start = startPos;           //レイの発射位置
-	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
-	Model::RayCast(hGroundModel, &data1); //レイを発射
-	XMFLOAT3 n = data1.normalVector;
-
-	// 戦車のY軸回転（ラジアン）
-	float rotY = XMConvertToRadians(transform_.rotate_.y);
-
-	// 地面の法線
-	XMVECTOR normal = XMVector3Normalize(XMLoadFloat3(&n));
-
-	// 戦車の旋回を打ち消す回転行列
-	XMMATRIX invRotY = XMMatrixRotationY(-rotY);
-
-	// 法線を戦車のローカル座標系に変換
-	XMVECTOR localNormal = XMVector3TransformNormal(normal, invRotY);
-
-	XMFLOAT3 localN;
-	XMStoreFloat3(&localN, localNormal);
-
-	// ローカル座標の傾斜角度を求める
-	GroundRotate_.x = XMConvertToDegrees(atan2f(localN.z, localN.y));
-	GroundRotate_.z = XMConvertToDegrees(atan2f(-localN.x, localN.y));
-
-	transform_.rotate_.x = transform_.rotate_.x + (GroundRotate_.x - transform_.rotate_.x) * Timer::GetDeltaTime();
-	transform_.rotate_.z = transform_.rotate_.z + (GroundRotate_.z - transform_.rotate_.z) * Timer::GetDeltaTime();
-
-	//次のフレームの時のポジションを計算
-	float nextY = transform_.position_.y - verticalVelocity * Timer::GetDeltaTime();
-
-	//落下処理
-	if (nextY <= 0 - data1.dist)
-	{
-		transform_.position_.y = 0 - data1.dist;
-		verticalVelocity = 0;
-		Vt = XMVectorSetY(Vt,0);
-		isFlying = false;
-	}
-	else
-	{
-		transform_.position_.y -= verticalVelocity * Timer::GetDeltaTime();
-		verticalVelocity += gravity * Timer::GetDeltaTime();
-		if (verticalVelocity >= verticalVelocityMax)
-		{
-			verticalVelocity = verticalVelocityMax;
-		}
-	}
-}
-
-XMFLOAT3 Car::HitObjevtMove(GameObject* terget,Transform mytf,float pb,XMFLOAT3 Vt)
-{
-	XMVECTOR retv = XMLoadFloat3(&Vt);
-	XMFLOAT3 retf;
-	XMFLOAT3 tPosF3 = terget->GetPosition();
-	XMVECTOR tPosVC = XMLoadFloat3(&tPosF3);
-	XMVECTOR myPosVC = XMLoadFloat3(&mytf.position_);
-	XMVECTOR vecT = tPosVC - myPosVC;
-	float yaw = XMConvertToRadians(mytf.rotate_.y);
-	XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
-	XMVECTOR rotVC = XMLoadFloat3(&rotF3);
-	rotVC = XMVector3Normalize(rotVC);
-	vecT = XMVector3Normalize(vecT);
-	float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
-	if (side > 0.01f)
-	{
-		retv += XMVectorSet(-pb, 0, 0, 0);
-	}
-	else if (side < -0.01f)
-	{
-		retv += XMVectorSet(pb, 0, 0, 0);
-	}
-	else
-	{
-	}
-	XMStoreFloat3(&retf, retv);
-	return retf;
 }
 
 void Car::HandRing()
@@ -331,31 +212,4 @@ void Car::AcceleWerk()
 	{
 		Vt -= XMVectorSet(0.0f, 0.0f, myStates.DECELERATION, 0.0f);
 	}
-}
-
-XMFLOAT3 Car::MovingVectorCreation(Transform ts, XMVECTOR vt)
-{
-	XMFLOAT3 output = { 0,0,0 };
-	//回転行列の生成
-	const float pitch = XMConvertToRadians(ts.rotate_.x);
-	const float yaw = XMConvertToRadians(ts.rotate_.y);
-	const float roll = XMConvertToRadians(ts.rotate_.z);
-	XMMATRIX Mr = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
-	//合成ベクトルを生成
-	XMVECTOR xM = XMVector3TransformCoord(vt, Mr);
-	//positionをベクトルに
-	XMVECTOR pos = XMLoadFloat3(&ts.position_);
-	//positionと合成ベクトルをかけ合わせる
-	pos = XMVectorAdd(pos, XMVectorScale(xM, speed));
-	//出力
-	XMStoreFloat3(&output, pos);
-	if (output.x > STAGE_SIZE || output.x < -STAGE_SIZE)
-	{
-		output.x = ts.position_.x;
-	}
-	if (output.z > STAGE_SIZE || output.z < -STAGE_SIZE)
-	{
-		output.z = ts.position_.z;
-	}
-	return output;
 }

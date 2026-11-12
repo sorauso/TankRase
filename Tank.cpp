@@ -12,15 +12,15 @@
 
 namespace
 {
-    XMVECTOR Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-    float aRotY = 0;
+	XMVECTOR separationVector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	float CanomPith = 0;
 
-	float test = 0;
+	float boostTimer = 0.0f;
+	bool isBoost = false;
+	float reloadTimer = 0.0f;
+	bool isReloading = false;
 
 	const float BULLET_SPEED = 1.0f;
-	const float speed = 0.1f;
-	const int STAGE_SIZE = 245;
 	const float rotSpeed = 0.05f;
 
 	const float ACCELERATION = 0.01f;
@@ -29,6 +29,9 @@ namespace
 	const float BACK_ACCELERTION_MAX = 0.8f;
 	const float ROTATE_ROTATION_Y_MAX_SPEED = 1.5f;
 	const float CAMERA_PITH_ANGLE = 0.8f;
+	const float BOOST_ANGLE = 20;
+	const float BOOST_TIME = 1.0f;
+	const float RELOAD_TIME = 5.0f;
 
 	// 砲身の仰俯角の回転速度
 	const float BARREL_ELEVATION_SPEED = 0.5f;
@@ -46,7 +49,7 @@ namespace
 }
 
 TankBody::TankBody(GameObject* parent)
-    :GameObject(parent, "TankBody"), hModel_(-1)
+    :Vehicle(parent, "TankBody"), hModel_(-1)
 {
 }
 
@@ -68,6 +71,8 @@ void TankBody::Initialize()
 	verticalVelocityMax = 10.0f;
 	transform_.scale_ = XMFLOAT3(0.02, 0.02, 0.02);
 	turretDirection = XMFLOAT3(0,0,0);
+	Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	aRotY = 0;
 
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
@@ -85,9 +90,21 @@ void TankBody::Initialize()
 
 void TankBody::Update()
 {
+	if (isReloading)
+	{
+		reloadTimer += Timer::GetDeltaTime();
+		if (reloadTimer > RELOAD_TIME)
+		{
+			isReloading = false;
+		}
+	}
+	else
+	{
+		reloadTimer = 0;
+	}
 	UpdateMove();
 
-	RotationTank();
+	RotationBody(transform_);
 
 	UpdateTurret();
 
@@ -96,7 +113,11 @@ void TankBody::Update()
 
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
-		Fire();
+		if (!isReloading)
+		{
+			isReloading = true;
+			Fire();
+		}
 	}
 
 }
@@ -111,94 +132,14 @@ void TankBody::Release()
 {
 }
 
-float TankBody::GetLandmarkdirection()
+
+
+void TankBody::OnCollision(GameObject* pTarget)
 {
-	float ret = 0;
-	Landmark* pLDK = (Landmark*)FindObject("LandMark");
-	if (pLDK == nullptr)
+	if (pTarget->GetObjectName() == "Obstacle")
 	{
-		return ret;
+		CalculateSlideVector(pTarget,transform_,Vt);
 	}
-	XMFLOAT3 ldPosF3 = pLDK->GetPosition();
-	ldPosF3.y = 0;
-	XMVECTOR ldPosVC = XMLoadFloat3(&ldPosF3);
-	XMFLOAT3 tankPosF3 = this->transform_.position_;
-	tankPosF3.y = 0;
-	XMVECTOR tankPosVC = XMLoadFloat3(&tankPosF3);
-	XMVECTOR vecT = ldPosVC - tankPosVC;
-	float yaw = XMConvertToRadians(this->transform_.rotate_.y);
-	XMFLOAT3 rotF3 = XMFLOAT3(sinf(yaw), 0, cosf(yaw));
-	XMVECTOR rotVC = XMLoadFloat3(&rotF3);
-	rotVC = XMVector3Normalize(rotVC);
-	vecT = XMVector3Normalize(vecT);
-	float side = XMVectorGetY(XMVector3Cross(rotVC, vecT));
-	float front = XMVectorGetX(XMVector3Dot(rotVC, vecT));
-	ret = XMConvertToDegrees(atan2f(side, front));
-	return ret;
-}
-
-void TankBody::RotationTank()
-{
-	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
-	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
-	RayCastData data1;
-	XMFLOAT3 startPos;
-	startPos = transform_.position_;
-	startPos.y = 0;
-	data1.start = startPos;           //レイの発射位置
-	data1.dir = XMFLOAT3(0, -1, 0);    //レイの方向
-	Model::RayCast(hGroundModel, &data1); //レイを発射
-
-	XMFLOAT3 n = data1.normalVector;
-
-	// 戦車のY軸回転（ラジアン）
-	float rotY = XMConvertToRadians(transform_.rotate_.y);
-
-	// 地面の法線
-	XMVECTOR normal = XMVector3Normalize(XMLoadFloat3(&n));
-
-	// 戦車の旋回を打ち消す回転行列
-	XMMATRIX invRotY = XMMatrixRotationY(-rotY);
-
-	// 法線を戦車のローカル座標系に変換
-	XMVECTOR localNormal = XMVector3TransformNormal(normal, invRotY);
-
-	XMFLOAT3 localN;
-	XMStoreFloat3(&localN, localNormal);
-
-	// ローカル座標の傾斜角度を求める
-	GroundRotate_.x = XMConvertToDegrees(
-		atan2f(localN.z, localN.y)
-	);
-
-	GroundRotate_.z = XMConvertToDegrees(
-		atan2f(-localN.x, localN.y)
-	);
-
-	transform_.rotate_.x = transform_.rotate_.x + (GroundRotate_.x - transform_.rotate_.x) * Timer::GetDeltaTime();
-	transform_.rotate_.z = transform_.rotate_.z + (GroundRotate_.z - transform_.rotate_.z) * Timer::GetDeltaTime();
-
-	float nextY = transform_.position_.y - verticalVelocity * Timer::GetDeltaTime();
-
-
-	if (nextY <= 0 - data1.dist)
-	{
-		transform_.position_.y = 0 - data1.dist;
-		verticalVelocity = 0;
-	}
-	else
-	{
-		transform_.position_.y -= verticalVelocity * Timer::GetDeltaTime();
-		verticalVelocity += gravity * Timer::GetDeltaTime();
-		if (verticalVelocity >= verticalVelocityMax)
-		{
-			verticalVelocity = verticalVelocityMax;
-		}
-	}
-
-	char buf[256];
-	sprintf_s(buf, "%.2lf : %.2lf\n", n.z, n.x);
-	OutputDebugStringA(buf);
 }
 
 void TankBody::SetTpsRotCamera()
@@ -378,33 +319,34 @@ void TankBody::UpdateMove()
 			Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
+	if (Input::IsKey(DIK_LSHIFT))
+	{
+		if (!isBoost && !isReloading)
+		{
+			isBoost = true;
+			isReloading = true;
+		}
+	}
+	if (isBoost)
+	{
+		Vt += XMVectorSet(0.0f, 0.0f, ACCELERATION * BOOST_ANGLE, 0.0f);
+		boostTimer += Timer::GetDeltaTime();
+		if (boostTimer > BOOST_TIME)
+		{
+			isBoost = false;
+			boostTimer = 0;
+		}
+	}
+	else
+	{
+		XMFLOAT3 Vtf;
+		XMStoreFloat3(&Vtf, Vt);
+		if (Vtf.z > ACCELERTION_MAX)
+		{
+			Vt -= XMVectorSet(0.0f, 0.0f, ACCELERATION * BOOST_ANGLE, 0.0f);
+		}
+	}
 
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 }
 
-XMFLOAT3 TankBody::MovingVectorCreation(Transform ts, XMVECTOR vt)
-{
-	XMFLOAT3 output = { 0,0,0 };
-	//回転行列の生成
-	const float pitch = XMConvertToRadians(ts.rotate_.x);
-	const float yaw = XMConvertToRadians(ts.rotate_.y);
-	const float roll = XMConvertToRadians(ts.rotate_.z);
-	XMMATRIX Mr = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
-	//合成ベクトルを生成
-	XMVECTOR xM = XMVector3TransformCoord(vt, Mr);
-	//positionをベクトルに
-	XMVECTOR pos = XMLoadFloat3(&ts.position_);
-	//positionと合成ベクトルをかけ合わせる
-	pos = XMVectorAdd(pos, XMVectorScale(xM, speed));
-	//出力
-	XMStoreFloat3(&output, pos);
-	if (output.x > STAGE_SIZE || output.x < -STAGE_SIZE)
-	{
-		output.x = ts.position_.x;
-	}
-	if (output.z > STAGE_SIZE || output.z < -STAGE_SIZE)
-	{
-		output.z = ts.position_.z;
-	}
-	return output;
-}
