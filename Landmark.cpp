@@ -28,12 +28,16 @@ void Landmark::Initialize()
 
 	Model::SetAnimFrame(hModel_, 0, 100, 1);
 
-	
+	initialUpdateCount_ = 0;
 }
 
 void Landmark::Update()
 {
-	RotationGroud();
+	if (initialUpdateCount_ < 3)
+	{
+		initialUpdateCount_++;
+		RotationGroud();
+	}
 }
 
 void Landmark::Draw()

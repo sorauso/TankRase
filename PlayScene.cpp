@@ -35,8 +35,11 @@ void PlayScene::Initialize()
 		Car* car = Instantiate<Car>(this);
 		car->SetCarNunber(i+1);
 	}
-	Obstacle* ob = Instantiate<Obstacle>(this);
-	ob->SetPosition(XMFLOAT3(-200, 0, 200));
+	for (int i = 0;i < 30;i++)
+	{
+		Obstacle* ob = Instantiate<Obstacle>(this);
+		ob->SetPosition(XMFLOAT3(-245 + rand() % (245 * 2), 0, -245 + rand() % (245 * 2)));
+	}
 }
 
 void PlayScene::Update()

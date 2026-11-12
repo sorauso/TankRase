@@ -30,7 +30,7 @@ Car::~Car()
 
 void Car::Initialize()
 {
-    hModel_ = Model::Load("TankBody.fbx");
+    hModel_ = Model::Load("Car.fbx");
     assert(hModel_ >= 0);
     SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 2.0f);
     AddCollider(collision);
@@ -74,8 +74,6 @@ void Car::Initialize()
 
 void Car::Update()
 {
-	
-
 	XMFLOAT3 oldPostion = transform_.position_;
 
 	HandRing();
@@ -102,15 +100,6 @@ void Car::Update()
 
 	RotationBody(transform_);
 	isHitExplosion = false;
-
-	if (transform_.position_.x > STAGE_SIZE || transform_.position_.x < -STAGE_SIZE)
-	{
-		transform_.position_.x = oldPostion.x;
-	}
-	if (transform_.position_.z > STAGE_SIZE || transform_.position_.z < -STAGE_SIZE)
-	{
-		transform_.position_.z = oldPostion.z;
-	}
 }
 
 void Car::Draw()

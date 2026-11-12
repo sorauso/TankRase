@@ -17,15 +17,23 @@ void Obstacle::Initialize()
 {
 	hModel_ = Model::Load("Enemy.fbx");
 	assert(hModel_ >= 0);
-	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 10.0f);
+
+	float radSize = 5 + rand() % 10;
+	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), radSize - 3);
 	AddCollider(collision);
 
-	transform_.scale_ = XMFLOAT3(10, 10, 10);
+	transform_.scale_ = XMFLOAT3(radSize, 2, radSize);
+
+	initialUpdateCount_ = 0;
 }
 
 void Obstacle::Update()
 {
-	RotationGroud();
+	if (initialUpdateCount_ < 3)
+	{
+		initialUpdateCount_++;
+		RotationGroud();
+	}
 }
 
 void Obstacle::Draw()

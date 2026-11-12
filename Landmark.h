@@ -26,5 +26,6 @@ private:
 	int hModel_;
 	XMFLOAT3 move_;
 	GameObject* pAcquisitionCar;
+	int initialUpdateCount_;
 };
 

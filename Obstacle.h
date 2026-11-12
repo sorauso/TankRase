@@ -23,5 +23,6 @@ public:
 	void RotationGroud();
 private:
 	int hModel_;
+	int initialUpdateCount_;
 };
 
