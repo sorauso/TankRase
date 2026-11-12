@@ -29,7 +29,7 @@ namespace
 	const float BACK_ACCELERTION_MAX = 0.8f;
 	const float ROTATE_ROTATION_Y_MAX_SPEED = 1.5f;
 	const float CAMERA_PITH_ANGLE = 0.8f;
-	const float BOOST_ANGLE = 20;
+	const float BOOST_ANGLE = 4;
 	const float BOOST_TIME = 1.0f;
 	const float RELOAD_TIME = 5.0f;
 
@@ -184,11 +184,11 @@ void TankBody::UpdateTurret()
 	{
 		if (turretDirection.y >= 0.1f)
 		{
-			//turretDirection.y -= TURRET_ROTATION_SPEED;
+			turretDirection.y -= TURRET_ROTATION_SPEED;
 		}
 		else if (turretDirection.y <= -0.1f)
 		{
-			//turretDirection.y += TURRET_ROTATION_SPEED;
+			turretDirection.y += TURRET_ROTATION_SPEED;
 		}
 		else
 		{
@@ -284,10 +284,11 @@ void TankBody::UpdateMove()
 	}
 	transform_.rotate_.y += aRotY;
 
+	XMFLOAT3 Vtf;
+	XMStoreFloat3(&Vtf, Vt);
+
 	if (Input::IsKey(DIK_W))
 	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
 		if (Vtf.z < ACCELERTION_MAX)
 		{
 			Vt += XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
@@ -295,8 +296,6 @@ void TankBody::UpdateMove()
 	}
 	else if (Input::IsKey(DIK_S))
 	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
 		if (Vtf.z > -BACK_ACCELERTION_MAX)
 		{
 			Vt -= XMVectorSet(0.0f, 0.0f, ACCELERATION, 0.0f);
@@ -304,8 +303,6 @@ void TankBody::UpdateMove()
 	}
 	else
 	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
 		if (Vtf.z > 0.01f)
 		{
 			Vt -= XMVectorSet(0.0f, 0.0f, DECELERATION, 0.0f);
@@ -318,6 +315,15 @@ void TankBody::UpdateMove()
 		{
 			Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 		}
+	}
+	XMStoreFloat3(&Vtf, Vt);
+	if (Vtf.x > 0.01f)
+	{
+		Vt -= XMVectorSet(DECELERATION, 0.0f, 0.0f, 0.0f);
+	}
+	else if (Vtf.x < -0.01f)
+	{
+		Vt += XMVectorSet(DECELERATION, 0.0f, 0.0f, 0.0f);
 	}
 	if (Input::IsKey(DIK_LSHIFT))
 	{
@@ -339,7 +345,6 @@ void TankBody::UpdateMove()
 	}
 	else
 	{
-		XMFLOAT3 Vtf;
 		XMStoreFloat3(&Vtf, Vt);
 		if (Vtf.z > ACCELERTION_MAX)
 		{

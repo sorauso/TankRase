@@ -49,8 +49,6 @@ void Car::Initialize()
 	Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	aRotY = 0;
 
-	isHitCar = false;
-	isHitTank = false;
 	isHitExplosion = false;
 
 	pHitTeaget = nullptr;
@@ -84,17 +82,6 @@ void Car::Update()
 	AcceleWerk();
 	if (pHitTeaget != nullptr)
 	{
-		if (isHitCar)
-		{
-			XMFLOAT3 Vtf;
-			XMStoreFloat3(&Vtf, Vt);
-			Vtf = HitObjevtMove(pHitTeaget,transform_, CAR_COLLISION_REPULSION_FORCE,Vtf);
-			Vt = XMLoadFloat3(&Vtf);
-		}
-		if (isHitTank)
-		{
-			
-		}
 		if (!isFlying)
 		{
 			if (isHitExplosion)
@@ -114,8 +101,6 @@ void Car::Update()
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 
 	RotationBody(transform_);
-	isHitCar = false;
-	isHitTank = false;
 	isHitExplosion = false;
 
 	if (transform_.position_.x > STAGE_SIZE || transform_.position_.x < -STAGE_SIZE)
@@ -145,19 +130,13 @@ void Car::SetCarNunber(int num)
 
 void Car::OnCollision(GameObject* pTarget)
 {
-	if (pTarget->GetObjectName() == "Car")
-	{
-		CalculateSlideVector(pTarget, transform_, Vt);
-	}
-	if (pTarget->GetObjectName() == "TankBody")
-	{
-		CalculateSlideVector(pTarget, transform_, Vt);
-	}
 	if (pTarget->GetObjectName() == "Bullet")
 	{
 		pHitTeaget = pTarget;
 		isHitExplosion = true;
+		return;
 	}
+	CalculateSlideVector(pTarget, transform_, Vt);
 }
 
 void Car::HandRing()
@@ -199,10 +178,10 @@ void Car::HandRing()
 
 void Car::AcceleWerk()
 {
-	if (!isHitCar || !isHitExplosion)
+	XMFLOAT3 Vtf;
+	XMStoreFloat3(&Vtf, Vt);
+	if (!isHitExplosion)
 	{
-		XMFLOAT3 Vtf;
-		XMStoreFloat3(&Vtf, Vt);
 		if (Vtf.z < myStates.ACCELERTION_MAX)
 		{
 			Vt += XMVectorSet(0.0f, 0.0f, myStates.ACCELERATION, 0.0f);
@@ -211,5 +190,14 @@ void Car::AcceleWerk()
 	else
 	{
 		Vt -= XMVectorSet(0.0f, 0.0f, myStates.DECELERATION, 0.0f);
+	}
+	XMStoreFloat3(&Vtf, Vt);
+	if (Vtf.x > 0.01f)
+	{
+		Vt -= XMVectorSet(myStates.DECELERATION, 0.0f, 0.0f, 0.0f);
+	}
+	else if (Vtf.x < -0.01f)
+	{
+		Vt += XMVectorSet(myStates.DECELERATION, 0.0f, 0.0f, 0.0f);
 	}
 }

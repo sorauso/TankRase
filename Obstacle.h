@@ -23,7 +23,5 @@ public:
 	void RotationGroud();
 private:
 	int hModel_;
-	XMFLOAT3 move_;
-	GameObject* pAcquisitionCar;
 };
 

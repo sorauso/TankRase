@@ -31,8 +31,6 @@ private:
 	void AcceleWerk();
 	
 private:
-	bool isHitCar;
-	bool isHitTank;
 	bool isHitExplosion;
 	bool isFlying;
 	GameObject* pHitTeaget;

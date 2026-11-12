@@ -16,15 +16,11 @@ Obstacle::~Obstacle()
 void Obstacle::Initialize()
 {
 	hModel_ = Model::Load("Enemy.fbx");
-	move_ = XMFLOAT3(0, 0, 0);
+	assert(hModel_ >= 0);
 	SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 10.0f);
 	AddCollider(collision);
 
 	transform_.scale_ = XMFLOAT3(10, 10, 10);
-
-	Model::SetAnimFrame(hModel_, 0, 100, 1);
-
-	
 }
 
 void Obstacle::Update()

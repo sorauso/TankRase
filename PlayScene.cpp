@@ -9,6 +9,7 @@
 #include "UI.h"
 #include "Car.h"
 #include "Engine/GameData.h"
+#include "Obstacle.h"
 
 namespace
 {
@@ -34,6 +35,8 @@ void PlayScene::Initialize()
 		Car* car = Instantiate<Car>(this);
 		car->SetCarNunber(i+1);
 	}
+	Obstacle* ob = Instantiate<Obstacle>(this);
+	ob->SetPosition(XMFLOAT3(-200, 0, 200));
 }
 
 void PlayScene::Update()
