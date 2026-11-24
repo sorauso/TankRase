@@ -43,13 +43,14 @@ private:
 		float DECELERATION;
 		float ACCELERTION_MAX;
 		float BACK_ACCELERTION_MAX;
+		float VEHICLE_WEIGHT;
 
 		CAR_STATES()
-			:rotSpeed(0), ACCELERATION(0), DECELERATION(0), ACCELERTION_MAX(0), BACK_ACCELERTION_MAX(0)
+			:rotSpeed(0), ACCELERATION(0), DECELERATION(0), ACCELERTION_MAX(0), BACK_ACCELERTION_MAX(0), VEHICLE_WEIGHT(0)
 		{
 		}
-		CAR_STATES(float rot, float ac, float dc, float acMax, float bacrmax)
-			:rotSpeed(rot), ACCELERATION(ac), DECELERATION(dc), ACCELERTION_MAX(acMax), BACK_ACCELERTION_MAX(bacrmax)
+		CAR_STATES(float rot, float ac, float dc, float acMax, float bacrmax,float vehicleWeight)
+			:rotSpeed(rot), ACCELERATION(ac), DECELERATION(dc), ACCELERTION_MAX(acMax), BACK_ACCELERTION_MAX(bacrmax), VEHICLE_WEIGHT(vehicleWeight)
 		{
 		}
 	};

@@ -109,10 +109,24 @@ void Vehicle::CalculateSlideVector(GameObject* terget, Transform mytf, XMVECTOR&
 	XMMATRIX rot = XMMatrixRotationY(XMConvertToRadians(mytf.rotate_.y));
 	XMMATRIX invRot = XMMatrixTranspose(rot);
 	normal = XMVector3TransformNormal(normal, invRot);
+
 	float dot = XMVectorGetX(XMVector3Dot(ret, normal));
 
 	if (dot < 0.0f)
 	{
+		if (terget->GetObjectName() == "Car")
+		{
+
+		}
+		else if (terget->GetObjectName() == "TankBody")
+		{
+
+
+		}
+		else
+		{
+
+		}
 		ret = XMVectorSubtract(ret, XMVectorScale(normal, dot));
 	}
 }

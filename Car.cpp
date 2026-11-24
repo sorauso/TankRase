@@ -40,11 +40,13 @@ void Car::Initialize()
 	const float DEC = ((rand() % 15) + 1) * 0.001f;
 	const float AC_MAX = ((rand() % 600) + 1500) * 0.001f;
 	const float B_MAX = ((rand() % 500) + 500) * 0.001f;
-	myStates = CAR_STATES(rot, AC, DEC, AC_MAX,B_MAX);
+	const float VW = ((rand() % 500) + 500) * 0.001f;
+	myStates = CAR_STATES(rot, AC, DEC, AC_MAX,B_MAX,VW);
 
 	const float sPosX = (rand() % 40) + 200;
 	const float sPosZ = (rand() % 40) + 200;
 	transform_.position_ = XMFLOAT3(-sPosX, 0, sPosZ);
+	transform_.scale_ = XMFLOAT3(0.5f, 0.5f, 0.5f);
 
 	Vt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	aRotY = 0;
