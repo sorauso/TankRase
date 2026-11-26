@@ -137,7 +137,7 @@ void TankBody::Release()
 
 void TankBody::OnCollision(GameObject* pTarget)
 {
-	if (pTarget->GetObjectName() == "Landmark")
+	if (pTarget->GetObjectName() == "LandMark")
 	{
 		return;
 	}

@@ -127,7 +127,7 @@ void Car::OnCollision(GameObject* pTarget)
 		isHitExplosion = true;
 		return;
 	}
-	if (pTarget->GetObjectName() == "Landmark")
+	if (pTarget->GetObjectName() == "LandMark")
 	{
 		return;
 	}
