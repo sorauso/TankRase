@@ -21,8 +21,8 @@ public:
 
 	//開放
 	void Release() override;
-	void RotationBody(Transform& tra);
-	void CalculateSlideVector(GameObject* terget, Transform mytf, XMVECTOR& ret);
+	void RotationBody(Transform& tra, XMVECTOR& ret);
+	void CalculateSlideVector(GameObject* terget, Transform mytf, XMVECTOR& ret,float mass);
 	XMFLOAT3 MovingVectorCreation(Transform ts, XMVECTOR vt);
 	XMFLOAT3 HitObjevtMove(GameObject* terget, Transform mytf, float pb, XMFLOAT3 Vt);
 	float GetLandmarkdirection();

@@ -32,6 +32,7 @@ namespace
 	const float BOOST_ANGLE = 4;
 	const float BOOST_TIME = 1.0f;
 	const float RELOAD_TIME = 5.0f;
+	const float WEIGHT = 20;
 
 	// 砲身の仰俯角の回転速度
 	const float BARREL_ELEVATION_SPEED = 0.5f;
@@ -102,14 +103,14 @@ void TankBody::Update()
 	{
 		reloadTimer = 0;
 	}
-	UpdateMove();
 
-	RotationBody(transform_);
+	RotationBody(transform_,Vt);
 
 	UpdateTurret();
 
 	SetTpsRotCamera();
 
+	UpdateMove();
 
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
@@ -136,10 +137,20 @@ void TankBody::Release()
 
 void TankBody::OnCollision(GameObject* pTarget)
 {
-	if (pTarget->GetObjectName() == "Obstacle")
+	if (pTarget->GetObjectName() == "Landmark")
 	{
-		CalculateSlideVector(pTarget,transform_,Vt);
+		return;
 	}
+	if (pTarget->GetObjectName() == "Bullet")
+	{
+		return;
+	}
+	CalculateSlideVector(pTarget, transform_, Vt, WEIGHT);
+}
+
+float TankBody::GetWeight()
+{
+	return WEIGHT;
 }
 
 void TankBody::SetTpsRotCamera()

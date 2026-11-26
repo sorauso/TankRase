@@ -32,7 +32,7 @@ void Car::Initialize()
 {
     hModel_ = Model::Load("Car.fbx");
     assert(hModel_ >= 0);
-    SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 2.0f);
+    SphereCollider* collision = new SphereCollider(XMFLOAT3(0, 0, 0), 1.0f);
     AddCollider(collision);
 
 	const float rot = ((rand() % 50) + 10) * 0.001f;
@@ -100,7 +100,7 @@ void Car::Update()
 	}
 	transform_.position_ = MovingVectorCreation(transform_, Vt);
 
-	RotationBody(transform_);
+	RotationBody(transform_,Vt);
 	isHitExplosion = false;
 }
 
@@ -127,7 +127,11 @@ void Car::OnCollision(GameObject* pTarget)
 		isHitExplosion = true;
 		return;
 	}
-	CalculateSlideVector(pTarget, transform_, Vt);
+	if (pTarget->GetObjectName() == "Landmark")
+	{
+		return;
+	}
+	CalculateSlideVector(pTarget, transform_, Vt,myStates.VEHICLE_WEIGHT);
 }
 
 void Car::HandRing()

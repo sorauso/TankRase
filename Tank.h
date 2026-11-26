@@ -20,6 +20,7 @@ public:
 	//開放
 	void Release() override;
 	void OnCollision(GameObject* pTarget) override;
+	float GetWeight();
 private:
 	int hModel_;
 	XMFLOAT3 turretDirection;

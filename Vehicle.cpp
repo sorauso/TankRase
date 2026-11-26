@@ -7,6 +7,8 @@
 #include "Engine/SphereCollider.h"
 #include "Engine/Timer.h"
 #include "Landmark.h"
+#include "Car.h"
+#include "Tank.h"
 
 Vehicle::Vehicle(GameObject* parent)
 	:GameObject(parent, "Vehicle")
@@ -38,7 +40,7 @@ void Vehicle::Release()
 {
 }
 
-void Vehicle::RotationBody(Transform& tra)
+void Vehicle::RotationBody(Transform& tra, XMVECTOR& ret)
 {
 	Ground* pGround = (Ground*)FindObject("Ground");    //ステージオブジェクトを探す
 	int hGroundModel = pGround->GetModelHundle();    //モデル番号を取得
@@ -86,6 +88,7 @@ void Vehicle::RotationBody(Transform& tra)
 	{
 		tra.position_.y = 0 - data1.dist;
 		verticalVelocity = 0;
+		ret = XMVectorSetY(ret,0);
 	}
 	else
 	{
@@ -98,7 +101,7 @@ void Vehicle::RotationBody(Transform& tra)
 	}
 }
 
-void Vehicle::CalculateSlideVector(GameObject* terget, Transform mytf, XMVECTOR& ret)
+void Vehicle::CalculateSlideVector(GameObject* terget, Transform mytf, XMVECTOR& ret,float mass)
 {
 	XMFLOAT3 myPos = mytf.position_;
 	XMFLOAT3 tarPos = terget->GetPosition();
@@ -116,18 +119,23 @@ void Vehicle::CalculateSlideVector(GameObject* terget, Transform mytf, XMVECTOR&
 	{
 		if (terget->GetObjectName() == "Car")
 		{
-
+			Car* carTerget = (Car*)terget;
+			float totalMass = mass + carTerget->GetWeight();
+			XMVECTOR corrention = XMVectorScale(normal, dot);
+			ret = XMVectorSubtract(ret, XMVectorScale(corrention, carTerget->GetWeight() / totalMass));
 		}
 		else if (terget->GetObjectName() == "TankBody")
 		{
-
+			TankBody* tankTerget = (TankBody*)terget;
+			float totalMass = mass + tankTerget->GetWeight();
+			XMVECTOR corrention = XMVectorScale(normal, dot);
+			ret = XMVectorSubtract(ret, XMVectorScale(corrention, tankTerget->GetWeight() /totalMass));
 
 		}
 		else
 		{
-
+			ret = XMVectorSubtract(ret, XMVectorScale(normal, dot));
 		}
-		ret = XMVectorSubtract(ret, XMVectorScale(normal, dot));
 	}
 }
 
